@@ -283,7 +283,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 :root { --u: 4px; --pixel: "Pixelify Sans", "Archivo", sans-serif; --tape: #F1E3C6; --tape-ink: #3A2530; --amber: #FFCF70; }
 .sheet::before { content: ""; display: block; height: calc(4 * var(--u)); background: linear-gradient(#D29C60 0 var(--u), #B07A48 0); box-shadow: 0 var(--u) 0 #170F15; }
 .intro h2, .project h2, .bar-name { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }   /* the pixel font joins f and i into one odd shape */
-.intro h2, .project h2 { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; letter-spacing: 0; line-height: 1.04; }
+.intro h2, .project h2 { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; letter-spacing: .045em; word-spacing: .08em; line-height: 1.04; }
 .intro h2 { font-size: clamp(26px, 3.2vw, 48px); max-width: 24ch; }
 .project h2 { font-size: clamp(28px, 4vw, 60px); max-width: 19ch; }
 .bar-name { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; font-size: 18px; letter-spacing: 0; }
@@ -356,7 +356,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   <nav aria-label="Sections">
     <a class="sec" href="#blinds">Blinds</a>
     <a class="sec" href="#pickypal">PickyPal</a>
-    <a class="sec" href="#challenge">Challenge</a>
+    <a class="sec" href="#challenge">Basium</a>
     <a class="sec" href="#robot">Robot</a>
     <a class="sec" href="#next">Next</a>
     <a class="resume" href="https://framerusercontent.com/assets/EcYrNpMtqdkERuZ7Hh8uOov0dY.pdf" target="_blank" rel="noopener">Resume</a>
@@ -374,7 +374,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <p class="hero-kicker note">Mechanical engineering, University of Maryland</p>
     <h1 class="hero-name" id="heroName"><span>Domenic</span><span>Landriscina</span></h1>
     <div class="hero-foot">
-      <p class="hero-line">Look through the blinds to see some of my past and current projects.</p>
+      <p class="hero-line" data-egg="Lap three. You found the robot. It is out for a walk on the path.">Look through the blinds to see some of my past and current projects.</p>
     </div>
   </div>
   <div class="blind-buttons" id="blindButtons" hidden>
@@ -386,7 +386,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   <nav class="ws" id="ws" aria-label="Projects on the workbench" hidden>
     <a href="#blinds" data-k="blinds" data-label="Blinds" aria-label="Automated blinds"></a>
     <a href="#pickypal" data-k="pickypal" data-label="PickyPal" aria-label="PickyPal"></a>
-    <a href="#challenge" data-k="challenge" data-label="Basium" aria-label="Ten thousand dollars and a marathon: the Basium app"></a>
+    <a href="#challenge" data-k="challenge" data-label="Basium" aria-label="Basium, a personal productivity app"></a>
     <a href="#robot" data-k="robot" data-label="Robot" aria-label="Walking robot"></a>
     <a href="#next" data-k="next" data-label="Next: V2" aria-label="Next: robot version two"></a>
   </nav>
@@ -517,26 +517,26 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     </article>
 
 <!-- ======================================================================
-     EDIT HERE: PROJECT 3: $10K AND A MARATHON
+     EDIT HERE: PROJECT 3: BASIUM
      ====================================================================== -->
     <article class="project" id="challenge">
       <p class="when note">February to<br>July 2026</p>
       <div class="body">
-        <header class="station"><canvas data-icon="challenge" aria-hidden="true"></canvas><h2>Ten thousand dollars and a marathon before nineteen <span class="status note">Failed</span></h2><i class="plank" aria-hidden="true"></i></header>
+        <header class="station"><canvas data-icon="challenge" aria-hidden="true"></canvas><h2>Basium, a personal productivity app</h2><i class="plank" aria-hidden="true"></i></header>
         <div class="split">
           <div>
-            <p class="lede">I gave myself six months to earn $10,000 from an app and run a marathon, and filmed it to stay accountable.</p>
+            <p class="lede">A habit tracker built on streaks. I designed it, built it and shipped it to the App Store in about two months.</p>
             <ul class="points">
-              <li>Built and shipped Basium, a habit tracker built on streaks, in about two months.</li>
-              <li>Marketed it on TikTok and Reddit for the rest. A few thousand views in total.</li>
+              <li>A streak counter, a calendar history and challenge paths that keep you coming back.</li>
+              <li>Marketed it on TikTok and Reddit. A few thousand views in total.</li>
               <li>PickyPal was easy to market because the problem hurt. Habit trackers are a crowded category, and mine was not different enough.</li>
             </ul>
             <div class="score" id="score">
-              <div class="row"><span class="big">$11</span><span class="of note">of $10,000</span><div class="track"><div class="fill" data-w="0.11"></div></div></div>
-              <div class="row"><span class="big">0 mi</span><span class="of note">of 26.2 miles</span><div class="track"><div class="fill" data-w="0"></div></div></div>
-              <div class="row"><span class="big">27</span><span class="of note">downloads at the deadline</span></div>
+              <div class="row"><span class="big">38</span><span class="of note">downloads</span></div>
+              <div class="row"><span class="big">$20</span><span class="of note">in sales</span></div>
+              <div class="row"><span class="big">5.0</span><span class="of note">on the App Store, 4 ratings</span></div>
             </div>
-            <p class="score-note note">Since then: 38 downloads and $20 in sales, as of November 2026.</p>
+            <p class="score-note note">As of November 2026.</p>
             <div class="learned"><span class="note">What I learned</span><q>Starting is the hard part. Once you are good at that, you need to start the right things.</q></div>
             <p class="links"><a href="https://apps.apple.com/us/app/basium-habit-tracker/id6756776017" target="_blank" rel="noopener">Basium on the App Store</a></p>
           </div>
@@ -645,7 +645,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
       <li><a href="https://framerusercontent.com/assets/EcYrNpMtqdkERuZ7Hh8uOov0dY.pdf" target="_blank" rel="noopener">Resume (PDF)</a></li>
       <li><a href="#top">Back to the top</a></li>
     </ul>
-    <p class="note">Domenic Landriscina, 2026. The green button opens the blind again.</p>
+    <p class="note">Domenic Landriscina, 2026. Press the green button to open the blind and go round again.</p>
   </div>
 </footer>
 </main>

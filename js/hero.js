@@ -17,7 +17,7 @@ const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a
 const CLOSED = 1.24;          // slat angle when shut, radians
 const FP = 240, HC = 5;       // focal length in art pixels, eye height in metres
 const DB = 80, ZEND = 79.55, DWS = 81.2;   // distance to the lit window, where the camera stops, depth of the workshop
-const G = HC * FP, PATHX = -9.33;
+const G = HC * FP, PATHX = -9.33, EGG = 3;   // EGG: laps before the surprise
 
 // Two bitmap fonts. Each glyph is one character per row, read as a base-32 number, one bit per pixel.
 const G5 = { A: 'ehhvhhh', B: 'uhhuhhu', C: 'ehggghe', D: 'sihhhis', E: 'vgguggv', F: 'vgguggg', G: 'ehgnhhf', H: 'hhhvhhh', I: 'e44444e', J: '72222ic', K: 'hikokih', L: 'ggggggv', M: 'hrllhhh', N: 'hpljhhh', O: 'ehhhhhe', P: 'uhhuggg', Q: 'ehhhlid', R: 'uhhukih', S: 'fgge11u', T: 'v444444', U: 'hhhhhhe', V: 'hhhhha4', W: 'hhhllla', X: 'hha4ahh', Y: 'hha4444', Z: 'v1248gv', 0: 'ehjlphe', 1: '4c4444e', 2: 'eh1248v', 3: 'v2421he', 4: '26aiv22', 5: 'vgu11he', 6: '68guhhe', 7: 'v124888', 8: 'ehhehhe', 9: 'ehhf12c', '.': '00000cc', ',': '0000c48', "'": '4480000', '-': '000e000', ':': '0cc0cc0', '!': '4444404', '?': 'eh12404' };
@@ -37,13 +37,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   const gm = g, rc = document.createElement('canvas'), gr = rc.getContext('2d');   // the room is drawn on its own layer, so the lamp lights the room and not the view outside
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, touch = matchMedia('(hover: none)').matches;
   const up = el => (el?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
-  const words = { name: [...heroUi.querySelectorAll('h1 span')].map(up).join(' ') || up(heroUi.querySelector('h1')), line: up(heroUi.querySelector('.hero-line')), end: up(endUi.querySelector('h2')) };
+  const words = { name: [...heroUi.querySelectorAll('h1 span')].map(up).join(' ') || up(heroUi.querySelector('h1')), line: up(heroUi.querySelector('.hero-line')), egg: (heroUi.querySelector('.hero-line').dataset.egg || '').toUpperCase(), end: up(endUi.querySelector('h2')) };
   const LABEL = {}; ws.querySelectorAll('a').forEach(a => { LABEL[a.dataset.k] = (a.dataset.label || a.dataset.k).toUpperCase(); });
 
   let W = 320, H = 180, s = 4, L = {}, sky = null, stars = [];
   let ox = 0, oy = 0, k = 1;            // the current drawing transform: screen = o + world * k, then rounded to whole pixels
   let z = 0, Fx = 0, Fy = 0;            // camera: how far it has flown, and where the lit window sits on screen
-  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
+  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
 
   // ---------------------------------------------------------------- drawing primitives
   function R(x, y, w, h, c) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k), x1 = Math.round(ox + (x + w) * k), y1 = Math.round(oy + (y + h) * k); if (x1 <= x0 || y1 <= y0 || x1 < 0 || y1 < 0 || x0 > W || y0 > H) return; g.fillStyle = c; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
@@ -70,7 +70,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const gap = W - 2 * mx >= words.name.length * 12 ? 2 : 1, per = Math.floor((W - 2 * mx + gap) / (10 + gap));
     const name = wrap(words.name, per).slice(0, 3), end = wrap(words.end, per).slice(0, name.length);
     const nameH = name.length * 14 + (name.length - 1) * 3;
-    const tx = mx + 1, tagX = tx + 34, tag = balance(words.line, Math.max(10, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 6))).slice(0, 7);
+    const tx = mx + 1, tagX = tx + 34, tag = balance(S.laps >= EGG && words.egg ? words.egg : words.line, Math.max(10, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 6))).slice(0, 7);
     const sillY = H - (6 + nameH + 5 + tag.length * 9 + 3 + 9 + 3) - 3;
     const wy0 = Math.ceil(60 / s) + 2, wx0 = mx, wx1 = W - mx - hw, P = Math.max(7, Math.round(H / 22));
     const n = Math.ceil((sillY - wy0 - 5) / P), slat0 = wy0 + 5 + P / 2;
@@ -243,6 +243,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     if (kb < 9) {
       g.fillStyle = '#15132e'; g.fillRect(0, 0, W, H); g.drawImage(sky, dx, dy);
       for (const st of stars) if (Math.sin(t * st[3] + st[2]) > -0.3) { g.fillStyle = st[3] > 1.6 ? '#fff1c9' : '#b9b3d8'; g.fillRect(st[0] + dx, st[1] + dy, 1, 1); }
+      if (S.laps >= EGG) { const u = (t % 6) / 0.9; if (u < 1) { const sx = Math.round(W * (0.85 - 0.5 * u)) + dx + 48, sy = Math.round(H * (0.06 + 0.16 * u)) + dy + 48; for (let i = 0; i < 7; i++) { g.globalAlpha = (1 - i / 7) * Math.sin(Math.PI * u); g.fillStyle = i ? '#ffd9a0' : '#fff6dc'; g.fillRect(sx + i * 2, sy - i, 2, 1); } g.globalAlpha = 1; } }
       k = 200 / (200 - z); ox = Fx; oy = Fy; const rnd = rng(5);                                                                    // far tree line
       for (let x = -300; x < 300; x += 6) { const h = 3 + rnd() * 6; R(x, 6 - h, 7, h + 2, '#2a2342'); }
     } else { g.fillStyle = '#7b3d46'; g.fillRect(0, 0, W, H); }
@@ -257,6 +258,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       k = FP / dz; ox = Fx + o[0] * k; oy = Fy + HC * k;
       if (o[2] > 0) { const c = TREES[o[2] - 1], q = o[3]; R1(-0.3, -3.2, 0.6, 3.2, '#3a2630'); disc(0, -6.2, 3.3 * q, c[0]); disc(-2.1 * q, -4.9, 2.3 * q, c[0]); disc(2.2 * q, -5.1, 2.4 * q, c[0]); disc(-0.6 * q, -7.1, 2.3 * q, c[1]); disc(-1.3 * q, -7.9, 1.2 * q, c[2]); }
       else if (o[2] === 0) { R1(-0.07, -4, 0.14, 4, '#231b2b'); R1(-0.3, -4.6, 0.6, 0.6, '#ffe2a0'); glow(0, -4.3, 1.9, '255,180,100', 0.14); glow(0, -4.3, 0.9, '255,200,120', 0.2); }
+      else if (S.laps >= EGG) { k = k * 2.6 / 34; ox -= 17 * k; iRobot(0, 0, t * 1.6); }                                         // after a few laps the robot gets out for a walk
       else { R1(-0.25, -1.5, 0.5, 1.5, '#2b2145'); R1(-0.2, -1.9, 0.4, 0.4, '#e8c3a0'); }                                           // someone walking the path
     }
   }
@@ -306,7 +308,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     }
     if (!endMode) {
       L.tag.forEach((ln, i) => { let x = L.tagX; const yy = L.yTag + i * 9; for (const ch of ln) { glyph(F5, ch, x, yy, 1, RAMP[Math.max(3, shade(ox + x * k, oy + yy * k) - 1)]); x += 6; } });
-      if (fade > 0.02) { g.globalAlpha = fade; { const hint = W - L.tagX - L.mx >= 130 ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
+      if (fade > 0.02) { g.globalAlpha = fade; { const wide = W - L.tagX - L.mx >= 130, hint = S.laps ? (wide ? 'LAP ' + (S.laps + 1) + ': SCROLL AGAIN' : 'LAP ' + (S.laps + 1)) : wide ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
     }
     if (kf) {
     k = kf; ox = fox; oy = foy;
@@ -369,6 +371,11 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       if (S.zoneWas !== 'end') S.endManual = false;
       if (!S.endManual) S.target = mix(0.02, CLOSED, smooth(0.25, 0.92, q));
     }
+    if (zn === 'end' && S.endManual && S.target < 0.1 && S.theta < 0.1) {   // opened again at the end: round we go, back to the top with the blind open
+      S.laps++; S.keep = S.target = 0; S.endManual = false; S.flash = 1; scrollTo({ top: 0, behavior: 'instant' });
+      if (S.laps === EGG) { layout(); place(); measure(); }
+      S.zoneWas = 'hero'; return;
+    }
     S.zoneWas = zn;
     const err = clamp(S.target, -CLOSED, CLOSED) - S.theta, rate = zn === 'end' && !S.endManual ? 9 : 2.1;
     S.theta += clamp(err * 6.5, -rate, rate) * dt;                 // a geared motor: rate-limited, with a soft landing
@@ -383,6 +390,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     if (inside) { const wk = (DWS - ZEND) / (DWS - z); k = wk; ox = Fx - W / 2 * wk; oy = Fy - H / 2 * wk; workshop(t, wk > 0.985); }
     else campus(t, kb);
     if (z < 0.975) room(t, theta, zn === 'end', pc);
+    if (S.flash > 0.01) { g.globalAlpha = S.flash * S.flash; g.fillStyle = '#ffe2a0'; g.fillRect(0, 0, W, H); g.globalAlpha = 1; S.flash = Math.max(0, S.flash - dt * 1.6); }
 
     const showB = (zn === 'hero' && p < 0.03) || (zn === 'end' && q > 0.9); if (buttons.hidden === showB) buttons.hidden = !showB;
     const showW = zn === 'hero' && pc > 0.955; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
