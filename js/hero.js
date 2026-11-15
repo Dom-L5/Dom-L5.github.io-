@@ -17,7 +17,7 @@ const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a
 const CLOSED = 1.24;          // slat angle when shut, radians
 const FP = 240, HC = 5;       // focal length in art pixels, eye height in metres
 const DB = 80, ZEND = 79.55, DWS = 81.2;   // distance to the lit window, where the camera stops, depth of the workshop
-const G = HC * FP, PATHX = -9.33, EGG = 3;   // EGG: laps before the surprise
+const G = HC * FP, PATHX = -9.33, EGG = 3, OPEN = 1;   // OPEN: screens of extra scroll at the end that open the blind again (matches .gl.px .end in the CSS)   // EGG: laps before the surprise
 
 // Two bitmap fonts. Each glyph is one character per row, read as a base-32 number, one bit per pixel.
 const G5 = { A: 'ehhvhhh', B: 'uhhuhhu', C: 'ehggghe', D: 'sihhhis', E: 'vgguggv', F: 'vgguggg', G: 'ehgnhhf', H: 'hhhvhhh', I: 'e44444e', J: '72222ic', K: 'hikokih', L: 'ggggggv', M: 'hrllhhh', N: 'hpljhhh', O: 'ehhhhhe', P: 'uhhuggg', Q: 'ehhhlid', R: 'uhhukih', S: 'fgge11u', T: 'v444444', U: 'hhhhhhe', V: 'hhhhha4', W: 'hhhllla', X: 'hha4ahh', Y: 'hha4444', Z: 'v1248gv', 0: 'ehjlphe', 1: '4c4444e', 2: 'eh1248v', 3: 'v2421he', 4: '26aiv22', 5: 'vgu11he', 6: '68guhhe', 7: 'v124888', 8: 'ehhehhe', 9: 'ehhf12c', '.': '00000cc', ',': '0000c48', "'": '4480000', '-': '000e000', ':': '0cc0cc0', '!': '4444404', '?': 'eh12404' };
@@ -397,12 +397,14 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     drawIcons(reduce ? 1 : t);
     if (zn === 'none') { S.zoneWas = zn; if (!buttons.hidden) buttons.hidden = true; if (!ws.hidden) ws.hidden = true; endUi.style.visibility = 'hidden'; return; }
     const y = scrollY, p = zn === 'hero' ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
+    // past the thank-you, the last screen of scroll opens the blind again; reaching the bottom goes round
+    const gap = zn === 'end' ? document.documentElement.scrollHeight - innerHeight - y : 1e9, r = zn === 'end' && q >= 1 ? clamp(1 - gap / (OPEN * vh), 0, 1) : 0;
     if (zn === 'hero') S.target = S.keep;                          // what the motor is asked to do
     else {
       if (S.zoneWas !== 'end') S.endManual = false;
-      if (!S.endManual) S.target = mix(0.02, CLOSED, smooth(0.25, 0.92, q));
+      if (!S.endManual) S.target = r > 0 ? mix(CLOSED, 0, smooth(0, 0.8, r)) : mix(0.02, CLOSED, smooth(0.25, 0.92, q));
     }
-    if (zn === 'end' && S.endManual && S.target < 0.1 && S.theta < 0.1) {   // opened again at the end: round we go, back to the top with the blind open
+    if (zn === 'end' && S.theta < 0.15 && ((S.endManual && S.target < 0.1) || (!S.endManual && OPEN && gap < 6))) {   // opened again at the end: round we go, back to the top with the blind open
       S.laps++; S.keep = S.target = 0; S.endManual = false; S.flash = 1; scrollTo({ top: 0, behavior: 'instant' });
       if (S.laps === EGG) { layout(); place(); measure(); }
       S.zoneWas = 'hero'; return;
@@ -425,7 +427,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
 
     const showB = (zn === 'hero' && p < 0.03) || (zn === 'end' && q > 0.9); if (buttons.hidden === showB) buttons.hidden = !showB;
     const showW = zn === 'hero' && pc > 0.955; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
-    if (zn === 'end') { endUi.style.visibility = 'visible'; endUi.style.opacity = smooth(0.5, 0.92, q).toFixed(2); endUi.style.pointerEvents = q > 0.6 ? 'auto' : 'none'; }
+    if (zn === 'end') { endUi.style.visibility = 'visible'; endUi.style.opacity = (smooth(0.5, 0.92, q) * (1 - smooth(0, 0.35, r))).toFixed(2); endUi.style.pointerEvents = q > 0.6 && r < 0.3 ? 'auto' : 'none'; }
     else endUi.style.visibility = 'hidden';
   }
 
