@@ -376,17 +376,18 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     S.theta += clamp(err * 6.5, -rate, rate) * dt;                 // a geared motor: rate-limited, with a soft landing
     S.led += ((Math.abs(err) > 0.03 && S.mode === 'manual' ? 1 : 0) - S.led) * Math.min(1, dt * 10);
     S.pg = Math.max(0, S.pg - dt * 4); S.pr = Math.max(0, S.pr - dt * 4); S.lamp += (S.lampT - S.lamp) * Math.min(1, dt * 7);
-    const theta = mix(S.theta, 0, smooth(0, 0.1, p));              // scrolling opens the slats, whatever the motor is doing
-    camera(p);
+    const pc = Math.min(1, p / 0.8);                                // the flight ends at 80% of the scroll; the rest is time in the workshop
+    const theta = mix(S.theta, 0, smooth(0, 0.1, pc));              // scrolling opens the slats, whatever the motor is doing
+    camera(pc);
 
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
     const kb = DB / (DB - z), inside = 1.8 * kb > Math.max(Fx, W - Fx) + 1 && 2.7 * kb > Math.max(Fy, H - Fy) + 1;
     if (inside) { const wk = (DWS - ZEND) / (DWS - z); k = wk; ox = Fx - W / 2 * wk; oy = Fy - H / 2 * wk; workshop(t, wk > 0.985); }
     else campus(t, kb);
-    if (z < 0.975) room(t, theta, zn === 'end', p);
+    if (z < 0.975) room(t, theta, zn === 'end', pc);
 
     const showB = (zn === 'hero' && p < 0.03) || (zn === 'end' && q > 0.9); if (buttons.hidden === showB) buttons.hidden = !showB;
-    const showW = zn === 'hero' && p > 0.955; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
+    const showW = zn === 'hero' && pc > 0.955; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
     if (zn === 'end') { endUi.style.visibility = 'visible'; endUi.style.opacity = smooth(0.5, 0.92, q).toFixed(2); endUi.style.pointerEvents = q > 0.6 ? 'auto' : 'none'; }
     else endUi.style.visibility = 'hidden';
   }
