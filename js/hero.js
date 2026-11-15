@@ -300,7 +300,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     k = kb; ox = Fx; oy = Fy; hall(t, kb);
     const wd = 52 + 7 * Math.sin(t * 0.07);
     const near = S.laps >= 4 ? 0.5 : 1;                                                                         // from lap four they close in
-    const bots = MUT.slice(0, Math.min(MUT.length, S.laps * (S.laps + 1) / 2)).map(m => [(m.x + m.ax * Math.sin(t * 0.11 * m.sp + m.ph)) * near, Math.max(m.w * 3.2, 4 + (m.d + m.ad * Math.sin(t * 0.09 * m.sp + m.ph * 2)) * near), -2, m]);
+    const sqz = L.port ? 0.42 : 1;                                                                                                   // a phone sees a narrow slice of the quad, so the robots keep to the near side of the path
+    const bots = MUT.slice(0, Math.min(MUT.length, S.laps * (S.laps + 1) / 2)).map(m => [(m.x + m.ax * Math.sin(t * 0.11 * m.sp + m.ph)) * near * sqz, Math.max(m.w * 3.2, 4 + (m.d + m.ad * Math.sin(t * 0.09 * m.sp + m.ph * 2)) * near), -2, m]);
     for (const o of [...OBJ, [PATHX + 0.5, wd, -1], ...bots].sort((a, b) => b[1] - a[1])) {
       const dz = o[1] - z; if (dz < 1.5) continue;
       k = FP / dz; ox = Fx + o[0] * k; oy = Fy + HC * k;
