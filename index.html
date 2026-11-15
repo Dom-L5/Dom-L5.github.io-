@@ -380,7 +380,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <a class="sec" href="#challenge">Basium</a>
     <a class="sec" href="#robot">Robot</a>
     <a class="sec" href="#next">Next</a>
-    <a class="resume" href="https://framerusercontent.com/assets/EcYrNpMtqdkERuZ7Hh8uOov0dY.pdf" target="_blank" rel="noopener">Resume</a>
+    <a class="resume" href="assets/Domenic-Landriscina-Resume.pdf" target="_blank" rel="noopener">Resume</a>
   </nav>
 </header>
 
@@ -487,8 +487,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
         </div>
 
         <div class="strip fit">
-          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-drive.webp" width="960" height="1280" alt="Looking down into the head rail: a silver gearmotor with a hex shaft coupled to the white tilt mechanism"></div><figcaption class="note">Motor and hex shaft inside the head rail.</figcaption></figure>
-          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-housing.webp" width="960" height="1280" alt="White 3D printed button box with a green and a red button, at the end of the blind's head rail beside the slats"></div><figcaption class="note">The button box, beside the slats.</figcaption></figure>
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-drive.webp" width="960" height="1280" alt="Looking down into the head rail: a silver gearmotor with a hex shaft coupled to the white tilt mechanism"></div><figcaption class="note">Testing the fitment of the gearbox.</figcaption></figure>
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-housing.webp" width="960" height="1280" alt="White 3D printed button box with a green and a red button, at the end of the blind's head rail beside the slats"></div><figcaption class="note">Front view: start and stop buttons, plus an indicator light.</figcaption></figure>
           <figure class="landscape" style="--ar:1.669"><div class="shot"><img loading="lazy" src="assets/blinds-back.webp" width="960" height="575" alt="The test stand from behind: the back of the button box, a white printed box fixed under the top beam, the cable between them, and the slats"></div><figcaption class="note">From behind: the enclosure under the top beam, and the cable to the buttons.</figcaption></figure>
           <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-team.webp" width="960" height="1280" alt="Two students leaning on the finished blind and its wooden test stand in a classroom"></div><figcaption class="note">The finished prototype, and the team.</figcaption></figure>
         </div>
@@ -597,22 +597,21 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             </div>
           </div>
           <div>
-            <p class="lede">Eight servos, a 3D printed body and my first circuit board. It walks.</p>
             <ul class="points" id="robotParts">
               <li data-group="body">The whole body was designed in SolidWorks, then printed on my Bambu Lab A1.</li>
               <li data-group="body">8+ design iterations and counting.</li>
-              <li data-group="pcb">For the power distribution and I²C bus, I designed my first simple PCB in Altium Designer.</li>
-              <li data-group="servo">An Arduino Nano and a PCA9685 driver run the eight servos. Two OLED displays are the eyes.</li>
+              <li data-group="pcb">For the power distribution and I2C bus, I designed my first simple PCB in Altium Designer.</li>
+              <li data-group="servo">An Arduino Nano controls the PCA9685 servo driver and two OLED displays, which act as the eyes.</li>
               <li data-group="leg">A trot gait written from scratch: phase-based, with eased foot paths.</li>
             </ul>
             <div class="learned"><span class="note">What I learned</span><q>Bringing a physical design to real life is the most rewarding part of the design process.</q></div>
           </div>
         </div>
         <div class="strip">
-          <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-walk-poster.jpg" aria-label="The robot standing up and walking toward the camera on a tile floor"><source src="assets/robot-walk.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">Standing up and walking.</figcaption></figure>
-          <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-carpet-poster.jpg" aria-label="The robot walking and turning on carpet"><source src="assets/robot-carpet.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">On carpet.</figcaption></figure>
+          <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-walk-poster.jpg" aria-label="The robot standing up and walking toward the camera on a tile floor"><source src="assets/robot-walk.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">Clearly not enough traction walking on tile.</figcaption></figure>
+          <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-carpet-poster.jpg" aria-label="The robot walking and turning on carpet"><source src="assets/robot-carpet.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">Testing a new foot design that did not work at all.</figcaption></figure>
           <figure><div class="shot"><img loading="lazy" src="assets/robot-wiring.webp" width="960" height="1280" alt="Inside the robot body: servo wires, the custom board and the driver packed into a small space"></div><figcaption class="note">The space problem.</figcaption></figure>
-          <figure><div class="shot" style="background:#fff"><img loading="lazy" src="assets/robot-pcb-3d.webp" width="600" height="425" alt="3D render of the custom power and I²C board, 55 by 39 millimetres" style="object-fit:contain"></div><figcaption class="note">Power and I²C board, 55 × 39 mm.</figcaption></figure>
+          <figure><div class="shot" style="background:#fff"><img loading="lazy" src="assets/robot-pcb-3d.webp" width="600" height="425" alt="3D render of the custom power and I2C board, 55 by 39 millimetres" style="object-fit:contain"></div><figcaption class="note">Power and I2C board, 55 × 39 mm.</figcaption></figure>
         </div>
       </div>
     </article>
@@ -640,8 +639,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             <table class="spec">
               <caption class="vh">Version two targets</caption>
               <tr><th scope="row">Controller</th><td>ESP32</td></tr>
-              <tr><th scope="row">Target parts cost</th><td>$70</td></tr>
-              <tr><th scope="row">Build videos</th><td>2 per week</td></tr>
+              <tr><th scope="row">Target parts cost</th><td>$100</td></tr>
+              <tr><th scope="row">Build videos</th><td>1 per week</td></tr>
               <tr><th scope="row">Ship date</th><td>December</td></tr>
             </table>
           </div>
@@ -660,7 +659,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   <div class="end-ui" id="endUi">
     <h2>Thanks for reading.</h2>
     <ul>
-      <li><a href="https://framerusercontent.com/assets/EcYrNpMtqdkERuZ7Hh8uOov0dY.pdf" target="_blank" rel="noopener">Resume (PDF)</a></li>
+      <li><a href="assets/Domenic-Landriscina-Resume.pdf" target="_blank" rel="noopener">Resume (PDF)</a></li>
       <li><a href="#top">Back to the top</a></li>
     </ul>
     <p class="note">Domenic Landriscina, 2026. Keep scrolling to open the blind and go round again.</p>
