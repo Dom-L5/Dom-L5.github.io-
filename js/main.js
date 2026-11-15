@@ -7,10 +7,11 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let hero = null;
 try {
   hero = initHero({
-    canvas: $('#blind'), heroSection: $('#top'), heroUi: $('#heroUi'), heroName: $('#heroName'), hint: $('#heroHint'),
-    endSection: $('#contact'), endUi: $('#endUi'), buttons: $('#blindButtons'), btnOpen: $('#btnOpen'), btnClose: $('#btnClose'),
+    canvas: $('#blind'), heroSection: $('#top'), heroUi: $('#heroUi'), endSection: $('#contact'), endUi: $('#endUi'),
+    buttons: $('#blindButtons'), btnOpen: $('#btnOpen'), btnClose: $('#btnClose'), btnLamp: $('#btnLamp'), ws: $('#ws'),
   });
-} catch (e) { console.warn('blind unavailable', e); }
+} catch (e) { console.warn('hero unavailable', e); }
+if (!hero) document.documentElement.classList.remove('gl', 'px');   // no canvas: the plain text hero and footer show instead
 
 // ---- top bar follows the sheet ----
 const bar = $('#bar'), sheet = $('#sheet');

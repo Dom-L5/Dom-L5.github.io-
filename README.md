@@ -17,11 +17,27 @@ Useful patterns:
 - A link is `<a href="https://address">Text people see</a>`.
 - If something breaks, open the file's **History**, pick the last good version, and restore it.
 
+## The opening scene
+
+The opening is pixel art drawn live by `js/hero.js`: the blind, the lamp, the campus and the workshop.
+It reads its words from `index.html`, so you still edit them there:
+
+- Your name and the line under it: the **OPENING SCREEN** section.
+- The tags under the projects on the workbench: the `data-label="..."` values in the same section.
+- The sign-off on the last screen: the heading in the **ENDING** section.
+
+They are drawn in capitals and can use letters, numbers and `. , : - ' ! ?`.
+
+## Branches
+
+- `main` is the live site.
+- `base-v1` is the site as it was before the pixel-art opening. To go back, restore `index.html`, `js/hero.js` and `js/main.js` from that branch.
+
 ## What's where
 
 | File | What it is |
 |---|---|
 | `index.html` | All the words and the page layout |
 | `assets/` | Photos and videos |
-| `js/` | The 3D blind, the blind drive drawing and the robot model |
+| `js/` | The pixel-art opening (`hero.js`), the blind drive drawing and the robot model |
 | `vendor/` | three.js, the 3D library |

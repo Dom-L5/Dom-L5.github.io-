@@ -6,7 +6,8 @@
 <title>Domenic Landriscina Portfolio</title>
 <!-- EDIT HERE: the description Google and LinkedIn show for the link -->
 <meta name="description" content="Domenic Landriscina, mechanical engineering at the University of Maryland. Four projects in the order they were built, including the ones that failed.">
-<meta name="theme-color" content="#0B0F12">
+<meta name="theme-color" content="#241925">
+<script>document.documentElement.className += " gl px";</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B0F12'/%3E%3Cpath d='M6 9h20M6 16h20M6 23h20' stroke='%23EDF1F2' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='25' cy='9' r='2.6' fill='%2325B862'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +18,7 @@
    left edge as the timeline; each project hangs from a rung. */
 :root {
   color-scheme: light;
-  --room: #0B0F12;      /* the room before the blind opens */
+  --room: #1B1420;      /* the room before the blind opens */
   --day: #EDF1F2;       /* daylight: the page */
   --ink: #111A1F;
   --mute: #54626A;
@@ -252,6 +253,31 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   .gl .hero { height: 160vh; height: 160lvh; }
   * { transition-duration: .01ms !important; }
 }
+
+/* ---------- pixel-art hero ---------- */
+#blind { image-rendering: crisp-edges; image-rendering: pixelated; }
+.px .hero { height: 440vh; height: 440lvh; }
+.px .hero-ui { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); }
+.bar { mix-blend-mode: normal; color: #F6E7CF; text-shadow: 0 1px 0 rgba(20, 12, 18, .75); }
+.bar.on-sheet { text-shadow: none; }
+.bar::before { content: ""; position: absolute; inset: 0 0 -26px 0; z-index: -1; pointer-events: none; background: linear-gradient(rgba(20, 12, 18, .62), rgba(20, 12, 18, 0)); transition: opacity .25s; }
+.bar.on-sheet::before { opacity: 0; }
+.bar-left { display: grid; align-items: center; min-width: 0; }
+.bar-left > * { grid-area: 1 / 1; }
+.bar-kicker { font-variation-settings: "wdth" 84; font-weight: 500; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity .25s; }
+.bar.on-sheet .bar-kicker { opacity: 0; }
+.bar nav a.resume:hover { background: #F6E7CF; color: var(--room); }
+.blind-buttons button.lamp { width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 12px; }
+.ws { position: fixed; left: 0; top: 0; z-index: 0; }
+.ws[hidden] { display: none; }
+.ws a { position: absolute; display: block; border-radius: 6px; -webkit-tap-highlight-color: transparent; }
+.ws a:focus-visible { outline: 2px solid #ffd27a; outline-offset: 2px; }
+.sheet { box-shadow: 0 -24px 60px rgba(10, 6, 12, .45); }
+.px .end-ui { left: var(--ex, 16px); top: var(--ey, 70vh); bottom: auto; width: auto; height: auto; max-width: calc(100vw - var(--ex, 16px) - 16px); padding: 0; display: block; color: #F6E7CF; }
+.px .end-ui h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.px .end-ui ul { font-size: clamp(15px, 1.5vw, 21px); gap: 4px 22px; }
+.px .end-ui p { margin-top: 8px; opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .px .hero { height: 220vh; height: 220lvh; } }
 </style>
 </head>
 <body>
@@ -262,7 +288,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
      The words between > and < are the menu labels. The Resume link is the href="..." address.
      ====================================================================== -->
 <header class="bar" id="bar">
-  <a class="bar-name" href="#top">Domenic Landriscina</a>
+  <div class="bar-left"><span class="bar-kicker" aria-hidden="true">Mechanical engineering, University of Maryland</span><a class="bar-name" href="#top">Domenic Landriscina</a></div>
   <nav aria-label="Sections">
     <a class="sec" href="#blinds">Blinds</a>
     <a class="sec" href="#pickypal">PickyPal</a>
@@ -276,7 +302,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 <main>
 <!-- ======================================================================
      EDIT HERE: OPENING SCREEN
-     Your name and the one-line intro.
+     Your name and the one-line intro. They are drawn into the pixel scene in capitals,
+     using letters, numbers and . , : - ' ! ? only.
      ====================================================================== -->
 <section class="hero" id="top" aria-label="Introduction">
   <div class="hero-ui" id="heroUi">
@@ -284,13 +311,21 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <h1 class="hero-name" id="heroName"><span>Domenic</span><span>Landriscina</span></h1>
     <div class="hero-foot">
       <p class="hero-line">Look through the blinds to see some of my past and current projects.</p>
-      <p class="hero-hint note" id="heroHint">Scroll to open the blind.</p>
     </div>
   </div>
   <div class="blind-buttons" id="blindButtons" hidden>
     <button type="button" id="btnOpen" aria-label="Open the blind"></button>
     <button type="button" id="btnClose" aria-label="Close the blind"></button>
+    <button type="button" class="lamp" id="btnLamp" aria-label="Switch the desk lamp off or on"></button>
   </div>
+  <!-- The projects on the workbench at the end of the fly-through. data-label is the tag drawn under each one. -->
+  <nav class="ws" id="ws" aria-label="Projects on the workbench" hidden>
+    <a href="#blinds" data-k="blinds" data-label="Blinds" aria-label="Automated blinds"></a>
+    <a href="#pickypal" data-k="pickypal" data-label="PickyPal" aria-label="PickyPal"></a>
+    <a href="#challenge" data-k="challenge" data-label="Basium" aria-label="Ten thousand dollars and a marathon: the Basium app"></a>
+    <a href="#robot" data-k="robot" data-label="Robot" aria-label="Walking robot"></a>
+    <a href="#next" data-k="next" data-label="Next: V2" aria-label="Next: robot version two"></a>
+  </nav>
 </section>
 
 <div class="sheet" id="sheet">
