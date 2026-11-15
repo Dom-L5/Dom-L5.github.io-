@@ -286,17 +286,19 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 .intro h2, .project h2, .bar-name { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }   /* the pixel font joins f and i into one odd shape */
 .intro h2, .project h2 { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; letter-spacing: .045em; word-spacing: .08em; line-height: 1.04; }
 .intro h2 { font-size: clamp(26px, 3.2vw, 48px); max-width: 24ch; }
-/* small framed pictures, hung on the wall: wood frame, cream canvas, a nail above */
-.gallery { grid-column: 2; display: flex; flex-wrap: wrap; gap: calc(10 * var(--u)) clamp(36px, 6vw, 96px); }
-.hang > .note { display: block; color: var(--mute); margin: 0 0 calc(4 * var(--u)) calc(3 * var(--u)); }
-.frames { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(5 * var(--u)) calc(4 * var(--u)); }
-.frames li { position: relative; margin: calc(3 * var(--u)); padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(2.5 * var(--u)); background: #F3E6CF; color: #2C1D26;
-  font-family: var(--pixel); font-weight: 500; font-size: clamp(17px, 1.45vw, 22px); line-height: 1.15; letter-spacing: .045em; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
-  box-shadow: inset var(--u) var(--u) 0 #fff6e2, inset calc(-1 * var(--u)) calc(-1 * var(--u)) 0 #dcc9a6, 0 0 0 var(--u) #c79457, 0 0 0 calc(2 * var(--u)) #8a5a2e, 0 0 0 calc(3 * var(--u)) #3a2418, calc(2 * var(--u)) calc(3 * var(--u)) 0 calc(3 * var(--u)) rgba(0, 0, 0, .32); }
-.frames li::before { content: ""; position: absolute; left: 50%; top: calc(-5 * var(--u)); width: var(--u); height: var(--u); margin-left: calc(-.5 * var(--u)); background: #9aa3a8; box-shadow: 0 var(--u) 0 #3a2418; }
-.frames.in-body { margin-top: calc(9 * var(--u)); }
+/* small pictures hung flat on the wall beside the lamp: wall-coloured, thin wooden edge, no shadow */
+.about { grid-column: 2; }
+.gallery { grid-area: 1 / 2; display: flex; flex-wrap: wrap; align-items: flex-end; gap: calc(7 * var(--u)) clamp(28px, 4.5vw, 72px); padding-bottom: calc(6 * var(--u)); }
+.hang > .note { display: block; color: var(--mute); margin: 0 0 calc(2.5 * var(--u)); }
+.frames { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(2.5 * var(--u)); max-width: 30ch; }
+.frames li { padding: calc(2 * var(--u)) calc(3 * var(--u)) calc(1.75 * var(--u)); background: rgba(243, 230, 207, .045); border: var(--u) solid #5A4250; color: var(--ink);
+  font-family: var(--pixel); font-weight: 500; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.2; letter-spacing: .045em; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.frames li.lg { font-size: clamp(18px, 1.6vw, 24px); border-color: #7A5A48; }
+.frames li:nth-child(2) { margin-top: calc(3 * var(--u)); }
+.frames li:nth-child(3) { margin-top: calc(-1 * var(--u)); }
+.frames.in-body { margin-top: calc(8 * var(--u)); max-width: none; }
 .ladder-note { margin: 2px 0 0; color: var(--mute); }
-@media (max-width: 720px) { .gallery { grid-column: 1; gap: calc(9 * var(--u)) 28px; } }
+@media (max-width: 720px) { .about { grid-column: 1; } .gallery { grid-area: 3 / 1; padding: calc(8 * var(--u)) 0 0; gap: calc(6 * var(--u)) 28px; } }
 .project h2 { font-size: clamp(28px, 4vw, 60px); max-width: 19ch; }
 .bar-name { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; font-size: 18px; letter-spacing: 0; }
 .bar nav a.resume { border-radius: 0; border-width: 2px; }
@@ -411,12 +413,16 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
      ====================================================================== -->
   <section class="intro wrap">
     <div class="intro-grid">
-      <h2 class="vh">About me</h2>
-      <div class="gallery">
-        <div class="hang"><span class="note">Studying</span><ul class="frames"><li>Mechanical engineering</li><li>Class of 2029</li></ul></div>
-        <div class="hang"><span class="note">Skills</span><ul class="frames"><li>SolidWorks</li><li>Altium</li><li>3D printing</li></ul></div>
-        <div class="hang"><span class="note">Interests</span><ul class="frames"><li>Robotics</li><li>Product design</li></ul></div>
-      </div>
+      <header class="station about">
+        <canvas data-icon="blinds" aria-hidden="true"></canvas>
+        <div class="gallery">
+          <h2 class="vh">About me</h2>
+          <div class="hang"><span class="note">Studying</span><ul class="frames"><li class="lg">Mechanical<br>engineering</li><li>Class of 2029</li></ul></div>
+          <div class="hang"><span class="note">Skills</span><ul class="frames"><li class="lg">SolidWorks</li><li>Altium</li><li>3D printing</li></ul></div>
+          <div class="hang"><span class="note">Interests</span><ul class="frames"><li>Robotics</li><li class="lg">Product<br>design</li></ul></div>
+        </div>
+        <i class="plank" aria-hidden="true"></i>
+      </header>
     </div>
   </section>
 
@@ -440,7 +446,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li>The printed motor tray slides into the head rail, so only the button box shows beside the slats.</li>
               <li>The blind mounts on the front of the window frame. The Arduino and battery sit in a second printed box, up inside the opening behind it.</li>
             </ul>
-            <ul class="frames in-body"><li>Senior design project</li><li>Catonsville High School</li></ul>
+            <ul class="frames in-body"><li class="lg">Senior design<br>project</li><li>Catonsville<br>High School</li></ul>
           </div>
           <figure class="phone">
             <div class="shot clip">
