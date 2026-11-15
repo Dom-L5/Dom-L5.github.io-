@@ -157,10 +157,9 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 24px); margin-top: clamp(36px, 6vh, 72px); }
 .strip .shot { aspect-ratio: 3 / 4; }
 .strip.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.strip.has-wide { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.strip .wide { grid-column: span 2; }
-.strip .wide .shot { aspect-ratio: auto; height: calc(100% - 3.2em); }
-.strip.has-wide figure { display: flex; flex-direction: column; } .strip.has-wide .wide .shot { flex: 1; height: auto; }
+.strip.fit { display: flex; align-items: flex-start; }
+.strip.fit figure { flex: var(--ar) 1 0; min-width: 0; }
+.strip.fit .shot { aspect-ratio: var(--ar); }
 
 /* drawings: live 3D on the page */
 .drawing { margin-top: clamp(40px, 7vh, 84px); display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(20px, 3vw, 48px); align-items: start; }
@@ -249,8 +248,11 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   .split, .split.rev, .drawing { grid-template-columns: minmax(0, 1fr); }
   .facts { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .strip.three, .strip.has-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .strip .wide .shot { aspect-ratio: 960 / 702; flex: none; }
+  .strip.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip.fit { flex-wrap: wrap; }
+  .strip.fit figure { flex: 0 0 calc(50% - 6px); }
+  .strip.fit figure.landscape { flex-basis: 100%; order: 3; }
+  .strip.fit figure:last-child { order: 4; }
   .stage.drive, .stage.robot { aspect-ratio: 1 / 1; }
   .phone { max-width: 300px; }
 }
@@ -484,11 +486,11 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
           </div>
         </div>
 
-        <div class="strip has-wide">
-          <figure><div class="shot"><img loading="lazy" src="assets/blinds-drive.webp" width="960" height="1280" alt="Looking down into the head rail: a silver gearmotor with a hex shaft coupled to the white tilt mechanism"></div><figcaption class="note">Motor and hex shaft inside the head rail.</figcaption></figure>
-          <figure><div class="shot"><img loading="lazy" src="assets/blinds-housing.webp" width="960" height="1280" alt="White 3D printed button box with a green and a red button, at the end of the blind's head rail beside the slats"></div><figcaption class="note">The button box, beside the slats.</figcaption></figure>
-          <figure class="wide"><div class="shot"><img loading="lazy" src="assets/blinds-back.webp" width="960" height="702" alt="The test stand from behind: the back of the button box, a white printed box fixed under the top beam, the cable between them, and the slats"></div><figcaption class="note">From behind: the enclosure under the top beam, and the cable to the buttons.</figcaption></figure>
-          <figure><div class="shot"><img loading="lazy" src="assets/blinds-team.webp" width="960" height="1280" alt="Two students leaning on the finished blind and its wooden test stand in a classroom"></div><figcaption class="note">The finished prototype, and the team.</figcaption></figure>
+        <div class="strip fit">
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-drive.webp" width="960" height="1280" alt="Looking down into the head rail: a silver gearmotor with a hex shaft coupled to the white tilt mechanism"></div><figcaption class="note">Motor and hex shaft inside the head rail.</figcaption></figure>
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-housing.webp" width="960" height="1280" alt="White 3D printed button box with a green and a red button, at the end of the blind's head rail beside the slats"></div><figcaption class="note">The button box, beside the slats.</figcaption></figure>
+          <figure class="landscape" style="--ar:1.669"><div class="shot"><img loading="lazy" src="assets/blinds-back.webp" width="960" height="575" alt="The test stand from behind: the back of the button box, a white printed box fixed under the top beam, the cable between them, and the slats"></div><figcaption class="note">From behind: the enclosure under the top beam, and the cable to the buttons.</figcaption></figure>
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-team.webp" width="960" height="1280" alt="Two students leaning on the finished blind and its wooden test stand in a classroom"></div><figcaption class="note">The finished prototype, and the team.</figcaption></figure>
         </div>
       </div>
     </article>
