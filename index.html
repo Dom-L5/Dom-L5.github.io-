@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Domenic Landriscina Portfolio</title>
 <!-- EDIT HERE: the description Google and LinkedIn show for the link -->
-<meta name="description" content="Domenic Landriscina, mechanical engineering at the University of Maryland. Four projects in the order they were built, including the ones that failed.">
+<meta name="description" content="Domenic Landriscina, mechanical engineering at the University of Maryland. Engineering and design projects: an automated window blind, two apps and a walking robot.">
 <meta name="theme-color" content="#241925">
 <script>document.documentElement.className += " gl px";</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B0F12'/%3E%3Cpath d='M6 9h20M6 16h20M6 23h20' stroke='%23EDF1F2' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='25' cy='9' r='2.6' fill='%2325B862'/%3E%3C/svg%3E">
@@ -286,6 +286,17 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 .intro h2, .project h2, .bar-name { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }   /* the pixel font joins f and i into one odd shape */
 .intro h2, .project h2 { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; letter-spacing: .045em; word-spacing: .08em; line-height: 1.04; }
 .intro h2 { font-size: clamp(26px, 3.2vw, 48px); max-width: 24ch; }
+/* small framed pictures, hung on the wall: wood frame, cream canvas, a nail above */
+.gallery { grid-column: 2; display: flex; flex-wrap: wrap; gap: calc(10 * var(--u)) clamp(36px, 6vw, 96px); }
+.hang > .note { display: block; color: var(--mute); margin: 0 0 calc(4 * var(--u)) calc(3 * var(--u)); }
+.frames { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(5 * var(--u)) calc(4 * var(--u)); }
+.frames li { position: relative; margin: calc(3 * var(--u)); padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(2.5 * var(--u)); background: #F3E6CF; color: #2C1D26;
+  font-family: var(--pixel); font-weight: 500; font-size: clamp(17px, 1.45vw, 22px); line-height: 1.15; letter-spacing: .045em; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  box-shadow: inset var(--u) var(--u) 0 #fff6e2, inset calc(-1 * var(--u)) calc(-1 * var(--u)) 0 #dcc9a6, 0 0 0 var(--u) #c79457, 0 0 0 calc(2 * var(--u)) #8a5a2e, 0 0 0 calc(3 * var(--u)) #3a2418, calc(2 * var(--u)) calc(3 * var(--u)) 0 calc(3 * var(--u)) rgba(0, 0, 0, .32); }
+.frames li::before { content: ""; position: absolute; left: 50%; top: calc(-5 * var(--u)); width: var(--u); height: var(--u); margin-left: calc(-.5 * var(--u)); background: #9aa3a8; box-shadow: 0 var(--u) 0 #3a2418; }
+.frames.in-body { margin-top: calc(9 * var(--u)); }
+.ladder-note { margin: 2px 0 0; color: var(--mute); }
+@media (max-width: 720px) { .gallery { grid-column: 1; gap: calc(9 * var(--u)) 28px; } }
 .project h2 { font-size: clamp(28px, 4vw, 60px); max-width: 19ch; }
 .bar-name { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; font-size: 18px; letter-spacing: 0; }
 .bar nav a.resume { border-radius: 0; border-width: 2px; }
@@ -396,16 +407,16 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 <div class="sheet" id="sheet">
 <!-- ======================================================================
      EDIT HERE: INTRO
-     The sentence under the opening, and the three facts (Studying / Working in / Also).
+     The framed pictures under the opening. Each <li>...</li> is one frame; the small word above a row is its title.
      ====================================================================== -->
   <section class="intro wrap">
     <div class="intro-grid">
-      <h2>Four projects, in the order I built them, including the ones that failed.</h2>
-      <dl class="facts">
-        <div><dt class="note">Studying</dt><dd>Mechanical engineering at the University of Maryland, class of 2029</dd></div>
-        <div><dt class="note">Working in</dt><dd>SolidWorks CAD and FEA, Altium PCB design, Arduino, 3D printing</dd></div>
-        <div><dt class="note">Also</dt><dd>Terps Racing Baja SAE</dd></div>
-      </dl>
+      <h2 class="vh">About me</h2>
+      <div class="gallery">
+        <div class="hang"><span class="note">Studying</span><ul class="frames"><li>Mechanical engineering</li><li>Class of 2029</li></ul></div>
+        <div class="hang"><span class="note">Skills</span><ul class="frames"><li>SolidWorks</li><li>Altium</li><li>3D printing</li></ul></div>
+        <div class="hang"><span class="note">Interests</span><ul class="frames"><li>Robotics</li><li>Product design</li></ul></div>
+      </div>
     </div>
   </section>
 
@@ -427,13 +438,9 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li>An Arduino Uno with an Adafruit Motor Shield runs the timer and drives the motor.</li>
               <li>Two buttons and one LED. The LED confirms the timer has started.</li>
               <li>The printed motor tray slides into the head rail, so only the button box shows beside the slats.</li>
-              <li>The Arduino and battery sit in a second printed box, under the top of the window frame behind the blind.</li>
+              <li>The blind mounts on the front of the window frame. The Arduino and battery sit in a second printed box, up inside the opening behind it.</li>
             </ul>
-            <dl class="meta note">
-              <dt>Project</dt><dd>Senior design engineering</dd>
-              <dt>School</dt><dd>Catonsville High School</dd>
-              <dt>Team</dt><dd>Two people</dd>
-            </dl>
+            <ul class="frames in-body"><li>Senior design project</li><li>Catonsville High School</li></ul>
           </div>
           <figure class="phone">
             <div class="shot clip">
@@ -464,8 +471,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li data-part="5"><span class="n">5</span><div><b>Buttons and LED</b><span class="note">Green starts the timer. The LED shows it is running.</span></div></li>
               <li data-part="6"><span class="n">6</span><div><b>Arduino Uno and Motor Shield</b><span class="note">The shield plugs into the top of the Uno.</span></div></li>
               <li data-part="7"><span class="n">7</span><div><b>12 V battery pack</b><span class="note">Plugs into the motor shield.</span></div></li>
-              <li data-part="8"><span class="n">8</span><div><b>Electronics enclosure</b><span class="note">3D printed. Fixed under the top of the window frame, behind the blind. A sheathed cable runs to the button box.</span></div></li>
-              <li data-part="9"><span class="n">9</span><div><b>Window frame</b><span class="note">Drawn as a deep frame. The prototype itself was built on a wooden test stand.</span></div></li>
+              <li data-part="8"><span class="n">8</span><div><b>Electronics enclosure</b><span class="note">3D printed. Tucked up under the top of the window opening, behind the blind. A sheathed cable runs to the button box.</span></div></li>
+              <li data-part="9"><span class="n">9</span><div><b>Window frame</b><span class="note">The blind mounts on the front of the frame, so it covers the whole window and the button box can sit off to the right. The prototype itself was built on a wooden test stand.</span></div></li>
             </ol>
           </div>
         </div>
@@ -491,9 +498,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             <p class="lede">A website that helps picky eaters learn a new food in small steps. It is the method I used on myself.</p>
             <ul class="points">
               <li>Built an MVP, then asked r/PickyEaters what was wrong with it before finishing.</li>
-              <li>People there did not want AI features, so I cut them.</li>
-              <li>About 3,000 clicks over a few months.</li>
-              <li>Shut down after about $200 in AI credits and a domain. I had no plan for keeping users or making money.</li>
+              <li>Took feedback from lots of users and got rid of the AI features that my user base was clearly not a fan of.</li>
+              <li>Got about 3,000 users over a few months, but I had no way to monetize.</li>
             </ul>
             <div class="ladder" id="ladder">
               <p class="ladder-title note">The method, on the first food I tried it with. Pick a step.</p>
@@ -505,6 +511,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
                 <li><button type="button" aria-pressed="false" aria-label="Step 5: comfortable"></button></li>
               </ol>
               <p class="ladder-read" id="ladderRead" aria-live="polite"><b>Chicken, step 1 of 5.</b> Completely avoidant.</p>
+              <p class="ladder-note note">It might sound dumb, but it works for a lot of people.</p>
             </div>
             <div class="learned"><span class="note">What I learned</span><q>I figured out how to launch, but not what to do once it got traction.</q></div>
             <p class="links"><a href="https://www.reddit.com/r/PickyEaters/comments/1locyo6/i_created_a_website_to_help_picky_eaters/" target="_blank" rel="noopener">The Reddit post</a></p>
@@ -526,8 +533,9 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
         <header class="station"><canvas data-icon="challenge" aria-hidden="true"></canvas><h2>Basium, a personal productivity app</h2><i class="plank" aria-hidden="true"></i></header>
         <div class="split">
           <div>
-            <p class="lede">A habit tracker built on streaks. I designed it, built it and shipped it to the App Store in about two months.</p>
             <ul class="points">
+              <li>A habit tracker built on streaks, coming from how I made habits in high school.</li>
+              <li>Took me about two months to build and ship, after many redesigns.</li>
               <li>A streak counter, a calendar history and challenge paths that keep you coming back.</li>
               <li>Marketed it on TikTok and Reddit. A few thousand views in total.</li>
               <li>PickyPal was easy to market because the problem hurt. Habit trackers are a crowded category, and mine was not different enough.</li>
@@ -580,14 +588,15 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             </div>
           </div>
           <div>
-            <p class="lede">Eight servos, a 3D printed body and my first circuit board. It walks, with a limp.</p>
+            <p class="lede">Eight servos, a 3D printed body and my first circuit board. It walks.</p>
             <ul class="points" id="robotParts">
-              <li data-group="body">Body and legs designed in SolidWorks. It took a table of failed prints to fit everything inside.</li>
-              <li data-group="pcb">My first PCB, designed in Altium: 5 V power distribution and the I²C bus.</li>
+              <li data-group="body">The whole body was designed in SolidWorks, then printed on my Bambu Lab A1.</li>
+              <li data-group="body">8+ design iterations and counting.</li>
+              <li data-group="pcb">For the power distribution and I²C bus, I designed my first simple PCB in Altium Designer.</li>
               <li data-group="servo">An Arduino Nano and a PCA9685 driver run the eight servos. Two OLED displays are the eyes.</li>
               <li data-group="leg">A trot gait written from scratch: phase-based, with eased foot paths.</li>
             </ul>
-            <div class="learned"><span class="note">What I learned</span><q>It is far more rewarding to build the whole thing yourself than to vibe-code it.</q></div>
+            <div class="learned"><span class="note">What I learned</span><q>Bringing a physical design to real life is the most rewarding part of the design process.</q></div>
           </div>
         </div>
         <div class="strip">
@@ -615,8 +624,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li>A smaller custom PCB.</li>
               <li>New feet with better traction.</li>
               <li>Firmware that makes new animations and leg calibration simple.</li>
+              <li>The overall goal is to release the files and let other people build and iterate on my designs.</li>
             </ul>
-            <p style="margin:26px 0 0;max-width:46ch">I will film the build, publish the files on GitHub, and then sell small runs of kits.</p>
           </div>
           <div>
             <table class="spec">
@@ -626,7 +635,6 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <tr><th scope="row">Build videos</th><td>2 per week</td></tr>
               <tr><th scope="row">Ship date</th><td>December</td></tr>
             </table>
-            <div class="learned"><span class="note">The point</span><q>I have proven I can start projects. Now I want to prove I can scale one.</q></div>
           </div>
         </div>
       </div>

@@ -23,11 +23,14 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
   const mat = (name, color, o) => (mats[name] = drawingMaterial(color, o));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 9 window frame: the top and the right-hand side of a deep opening, cut away on the left and below
+  // 9 window frame: the top and the right-hand side of a deep opening, cut away on the left and below.
+  //   The blind is an outside mount: its head rail is screwed to the FRONT of the frame, so the slats cover the whole
+  //   opening, the button box hangs off to the right, and the opening behind the blind is free for the enclosure.
   const frame = new THREE.Group(); const mFrame = mat('9', FRAME);
-  frame.add(box(418, 40, 172, mFrame, -91, 44, -44), box(40, 380, 172, mFrame, 98, -166, -44));
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(378, 380), new THREE.MeshBasicMaterial({ color: 0xb9d6e6, transparent: true, opacity: 0.32, depthWrite: false }));
-  glass.position.set(-111, -166, -120); frame.add(glass);
+  frame.add(box(320, 50, 130, mFrame, -140, 11, -93), box(50, 342, 130, mFrame, -5, -185, -93));
+  frame.add(box(22, 24, 8, mFrame, -262, 0, -24), box(22, 24, 8, mFrame, -70, 0, -24));   // the two mounting brackets
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(270, 342), new THREE.MeshBasicMaterial({ color: 0xb9d6e6, transparent: true, opacity: 0.32, depthWrite: false }));
+  glass.position.set(-165, -185, -140); frame.add(glass);
 
   // 1 the blind: head rail (an open-topped channel), tilt rod, stock tilt mechanism, slats, ladder cords
   const blind = new THREE.Group(); const mRail = mat('1', WHITE);
@@ -64,7 +67,7 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
   ctl.add(mkBtn(mats['5'], 19), mkBtn(drawingMaterial(0xc2332b), 45));
   const led = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.3, 6, 16), new THREE.MeshBasicMaterial({ color: 0x6fb6ff })); led.rotation.x = Math.PI / 2; led.position.set(32, -82, 23.5); ctl.add(led);
 
-  // 8 electronics enclosure, fixed under the top of the frame behind the blind: a long shallow tier for the
+  // 8 electronics enclosure, fixed under the top of the opening, behind the blind: a long shallow tier for the
   //   battery pack and a deeper tier for the Arduino. 6 the two boards, 7 the battery pack.
   const enc = new THREE.Group(); const mEnc = mat('8', WHITE);
   const shell = new THREE.Group();
@@ -78,10 +81,10 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
   shield.add(box(48, 9, 2.5, hdr, 2, -5.5, 24, false), box(42, 9, 2.5, hdr, -4, -5.5, -24, false), box(16, 9, 10, drawingMaterial(0x2f6fd0), 22, 5.5, 18));
   uno.add(box(12, 11, 16, drawingMaterial(STEEL, { metalness: 0.4 }), -30, 6, -12), box(9, 11, 14, hdr, -31, 6, 14));
   const batt = box(112, 15, 58, mat('7', DARK), -128, 13.5, -76);
-  enc.add(shell, lid, uno, shield, batt);
+  enc.add(shell, lid, uno, shield, batt); enc.position.set(0, -38, 0);   // up under the top of the opening
   // sheathed cable from the enclosure, behind the blind, to the back of the button box
-  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(-50, 8, -78), new THREE.Vector3(-26, 2, -86), new THREE.Vector3(8, -22, -74), new THREE.Vector3(30, -44, -44), new THREE.Vector3(33, -50, -21)]);
-  const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 3.2, 8), new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.6, transparent: true }));
+  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(-49, -36, -76), new THREE.Vector3(-40, -34, -44), new THREE.Vector3(-33, -36, -27), new THREE.Vector3(-8, -42, -24.5), new THREE.Vector3(18, -50, -24), new THREE.Vector3(33, -56, -21)]);
+  const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 2.6, 8), new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.6, transparent: true }));
 
   root.add(frame, blind, shaft, motor, housing, ctl, enc, cable);
   const shadow = blobShadow(640, 300, 0.12); shadow.position.set(-80, -372, -30); root.add(shadow);
@@ -99,7 +102,7 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
     [1, blind, [-285, -129, 22], [-0.07, 0.06], 0], [2, shaft, [-107, 10, 0], [0.0, -0.15], 0.62], [3, motor, [-40, 20, 0], [0.07, -0.09], 0.62],
     [4, housing, [30, 23, 20], [0.09, -0.09], 0], [5, ctl, [45, -62, 34], [0.1, 0.035], 0],
     [6, shield, [-70, -27, -50], [0.11, 0.05], 0.78], [7, batt, [-80, 13, -47], [0.08, -0.03], 0.78], [8, enc, [-190, 24, -45], [-0.03, -0.11], 0.62],
-    [9, frame, [-180, 44, 42], [-0.03, -0.065], 0],
+    [9, frame, [-190, 36, -40], [-0.03, -0.065], 0],
   ].map(([n, obj, p, off, min]) => {
     const el = document.createElement('div'); el.className = 'balloon'; el.textContent = n; balloons.appendChild(el);
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); balloons.querySelector('svg').appendChild(line);
