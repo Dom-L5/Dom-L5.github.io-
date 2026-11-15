@@ -136,7 +136,6 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       out.push({ f, pal: PAL[lv < 2 ? 0 : 1 + Math.floor(rnd() * 5)], eyes: f.eyes ? [1, 3, 4][Math.floor(rnd() * 3)] : 2, w: (2.4 + 0.5 * lv * rnd()) * (big ? 2.3 : 1), sp: 0.8 + rnd() * 0.9, ph: rnd() * 40,
         x: onPath ? PATHX + (rnd() - 0.5) * 2 : -34 + rnd() * 60, ax: onPath ? 0.4 : 2 + rnd() * 5, d: i === 0 ? 30 : 10 + rnd() * 58, ad: 3 + rnd() * 6 });
     } return out; })();
-  const BOSS = { f: { twin: 1, spikes: 1, legs: 1, ant: 1, tail: 1, glow: 1 }, pal: PAL[5], eyes: 3 };
   function iMutant(t, m) {
     const f = m.f, [B, D, M, E] = m.pal, x = 0, hov = f.hover ? 5 + Math.round(Math.sin(t * 3)) : 0, y = -hov;
     const a = f.hover ? 1 : Math.sin(t * 5) > 0 ? 1 : 0, b = f.hover ? 1 : 1 - a, bl = Math.sin(t * 4) > 0;
@@ -307,25 +306,30 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(-B, -B, 2 * B, B + wy0, WALL); R(-B, sillY, 2 * B, B, WALL); R(-B, wy0, B + wx0, sillY - wy0, WALL); R(wx1, wy0, B, sillY - wy0, WALL);
     R(wx0 - 2, wy0 - 2, ww + 4, 2, '#3c2b34'); R(wx0 - 2, wy0, 2, sillY - wy0, '#3c2b34'); R(wx1, wy0, 2, sillY - wy0, '#33242d');
     const a = Math.abs(Math.sin(theta)), band = Math.max(1, P * 1.16 * a), part = a < 0.9;                                           // the slats
+    const broke = S.laps >= BROKE;
+    if (!broke) {
     for (let i = 0; i < L.n; i++) {
       const top = L.slat0 + i * P - band / 2; R1(wx0, top, ww, band, band < 1.6 ? '#5f4c57' : '#3a2b35');
       if (band >= 2) { R(wx0, top + band - 1, ww, 1, '#281d26'); if (part) R(wx0, theta > 0 ? top : top + band - 1, ww, 1, '#b56f5e'); }
     }
     R1(wx0 + ww * 0.27, wy0 + 5, 1, sillY - wy0 - 5, '#54434e'); R1(wx0 + ww * 0.73, wy0 + 5, 1, sillY - wy0 - 5, '#54434e');
-    const broke = S.laps >= BROKE, bcx = Math.round(wx0 + ww * (L.port ? 0.66 : 0.62));
-    if (broke) {                                                                                                                    // something came through: a hole in the blind, cracked glass around it
-      const hr = (sillY - wy0) * 0.34, hcy = sillY - hr * 0.75, hwd = Math.min(hr * 1.25, ww * 0.3), jag = v => 0.72 + 0.28 * Math.abs(Math.sin(v * 12.9898) * 43758.5453 % 1);
-      for (let dy = -hr; dy < hr; dy++) { const yy = hcy + dy; if (yy < wy0 + 5 || yy >= sillY) continue; const w = hwd * Math.sqrt(1 - dy * dy / (hr * hr)) * jag(Math.round(dy)), w2 = hwd * Math.sqrt(1 - dy * dy / (hr * hr)) * jag(Math.round(dy) + 99);
-        const x0 = Math.round(ox + (bcx - w) * k), x1 = Math.round(ox + (bcx + w2) * k), y0 = Math.round(oy + yy * k), y1 = Math.round(oy + (yy + 1) * k); if (x1 > x0 && y1 > y0) g.clearRect(x0, y0, x1 - x0, y1 - y0); }
-      for (let i = 0; i < 9; i++) { const an = -Math.PI * (0.04 + i / 8 * 0.92) + 0.2 * Math.sin(i * 7.1), len = hr * (0.5 + 0.5 * jag(i + 3)); let wob = 0;
-        for (let r = 0.8; r < 1 + len / hr; r += 0.5 / hr) { wob += (jag(i * 31 + Math.round(r * hr)) - 0.86) * 0.5; const cxx = bcx + Math.cos(an) * hwd * r + wob * Math.sin(an) * 2, cyy = hcy + Math.sin(an) * hr * r - wob * Math.cos(an) * 2; if (cxx > wx0 && cxx < wx1 - 1 && cyy > wy0 + 5 && cyy < sillY - 1) R1(cxx, cyy, 1, 1, i & 1 ? '#cfe8ee' : '#9fc4cf'); } }
-      for (let i = 0; i < 7; i++) { const sx = bcx + (jag(i + 50) - 0.86) * hwd * 9; R1(sx, sillY - 1 - (i % 3 === 0 ? 1 : 0), 1 + (i & 1), 1 + (i % 3 === 0 ? 1 : 0), i & 1 ? '#cfe8ee' : '#9fc4cf'); }
+    }
+    if (broke) {                                                                                                                    // the blind has come down and the glass is gone, bar the teeth left in the frame
+      const jag = v => Math.abs(Math.sin(v * 12.9898) * 43758.5453 % 1), GL = ['rgba(205,235,242,.5)', 'rgba(170,210,225,.34)', 'rgba(225,245,250,.62)'];
+      const tooth = (side, pos, len, wid, c) => { for (let i = 0; i < len; i++) { const w = Math.max(1, wid * (1 - i / len)), sk = (jag(pos) - 0.5) * i * 0.8;
+        if (side === 0) R1(pos - w / 2 + sk, wy0 + 5 + i, w, 1, c); else if (side === 1) R1(pos - w / 2 + sk, sillY - 1 - i, w, 1, c); else if (side === 2) R1(wx0 + i, pos - w / 2 + sk, 1, w, c); else R1(wx1 - 1 - i, pos - w / 2 + sk, 1, w, c); } };
+      const wh = sillY - wy0 - 5;
+      for (let x = wx0 + 2, i = 0; x < wx1 - 2; i++) { const wd = 5 + jag(i) * 12; tooth(0, x + wd / 2, 4 + jag(i + 40) * wh * 0.3, wd, GL[i % 3]); x += wd * (0.6 + jag(i + 7) * 0.7); }
+      for (let x = wx0 + 2, i = 0; x < wx1 - 2; i++) { const wd = 4 + jag(i + 80) * 10; tooth(1, x + wd / 2, 2 + jag(i + 120) * wh * 0.18, wd, GL[(i + 1) % 3]); x += wd * (0.7 + jag(i + 17) * 0.9); }
+      for (let y = wy0 + 8, i = 0; y < sillY - 3; i++) { const wd = 5 + jag(i + 200) * 10; tooth(2, y + wd / 2, 3 + jag(i + 240) * ww * 0.12, wd, GL[i % 3]); tooth(3, y + wd / 2, 3 + jag(i + 280) * ww * 0.12, wd * (0.6 + jag(i + 300)), GL[(i + 2) % 3]); y += wd * (0.7 + jag(i + 27)); }
+      for (let i = 0; i < 16; i++) { const sx = wx0 + 3 + jag(i + 50) * (ww - 8), big = i % 4 === 0; R1(sx, sillY - (big ? 2 : 1), big ? 2 : 1, big ? 2 : 1, GL[i % 3].replace(/,\.\d+\)/, ',1)')); }
+      for (let sI = 0; sI < 3; sI++) for (let j = 0; j < 7 + sI * 3; j++) R(wx0 + 2 + j * 4 + sI * 3, wy0 + 6 + sI * 4 + j * (1.5 + sI * 0.8), 5, 2, sI & 1 ? '#5f4c57' : '#3a2b35');   // a few slats still hang by one cord
+      for (let i = 0; i < 6; i++) { const px0 = wx0 + ww * 0.26 + (jag(i + 400) - 0.5) * 14; R(px0, sillY - 2 - i * 2, ww * 0.42 + (jag(i + 410) - 0.5) * 16, 2, i & 1 ? '#5f4c57' : '#3a2b35'); R(px0, sillY - 1 - i * 2, ww * 0.42, 1, '#281d26'); }   // the rest lie in a heap on the sill
     }
     R(wx0 - 1, wy0, ww + 2, 5, '#4f3e49'); R(wx0 - 1, wy0, ww + 2, 1, '#6c5864'); R(wx0 - 1, wy0 + 4, ww + 2, 1, '#33262e');           // head rail, then the button box beside it
     R(hx, hy, hw, hh, '#5b4a54'); R(hx, hy, hw, 1, '#7a6672'); R(hx + hw - 1, hy, 1, hh, '#43363f'); R(hx, hy + hh - 1, hw, 1, '#43363f');
     const btn = (x, y, c, d, hi, pr) => { const r = L.br; R(x - r - 0.5, y - r - 0.5, 2 * r + 1, 2 * r + 1, '#1c151b'); R(x - r, y - r, 2 * r, 2 * r, pr > 0.3 ? d : c); if (pr <= 0.3) R1(x - r, y - r, 1, 1, hi); };
     btn(L.gx, L.gy, '#25B862', '#17723c', '#8ff0b6', S.pg); btn(L.rx, L.ry, '#C2332B', '#7d1f1a', '#f08a80', S.pr);
-    if (broke && Math.sin(t * 6) > 0) { const r = L.br + 1.5; R(L.rx - r, L.ry - r, 2 * r, 1, '#ffb0a0'); R(L.rx - r, L.ry + r - 1, 2 * r, 1, '#ffb0a0'); R(L.rx - r, L.ry - r, 1, 2 * r, '#ffb0a0'); R(L.rx + r - 1, L.ry - r, 1, 2 * r, '#ffb0a0'); }
     R1((L.gx + L.rx) / 2 - 0.5, Math.max(L.gy, L.ry) + (L.port ? 6 : 3.5), 1, 1, S.led > 0.5 ? '#9fd8ff' : '#2a3442');
     R(wx0 - 4, sillY, ww + hw + 8, 2, '#6a4c50'); R(wx0 - 4, sillY + 2, ww + hw + 8, 1, '#3a2830');                                    // sill, and what lives on it
     const bx = wx0 + Math.round(ww * 0.06), px = wx0 + Math.round(ww * 0.82), cy = '#35e0d0';
@@ -351,9 +355,9 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       }
       y += 17;
     }
-    if (!endMode) {
+    if (!endMode && !broke) {
       L.tag.forEach((ln, i) => { let x = L.tagX; const yy = L.yTag + i * 9; for (const ch of ln) { glyph(F5, ch, x, yy, 1, RAMP[Math.max(3, shade(ox + x * k, oy + yy * k) - 1)]); x += 6; } });
-      if (fade > 0.02) { g.globalAlpha = fade; { const wide = W - L.tagX - L.mx >= 130, hint = S.laps >= BROKE ? (wide ? 'PRESS RED TO RESET' : 'PRESS RED') : S.laps ? (wide ? 'LAP ' + (S.laps + 1) + ': SCROLL AGAIN' : 'LAP ' + (S.laps + 1)) : wide ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (S.laps < BROKE && Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
+      if (fade > 0.02) { g.globalAlpha = fade; { const wide = W - L.tagX - L.mx >= 130, hint = S.laps ? (wide ? 'LAP ' + (S.laps + 1) + ': SCROLL AGAIN' : 'LAP ' + (S.laps + 1)) : wide ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
     }
     if (kf) {
     k = kf; ox = fox; oy = foy;
@@ -366,7 +370,37 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       const cx = W - L.mx - 14, cb = H - 11; R(cx + 2, cb - 11, 2, 12, '#e0902e'); R(cx + 2, cb - 13, 2, 2, '#f1e3c6'); R(cx + 6, cb - 14, 2, 15, '#c2332b'); R(cx + 9, cb - 9, 2, 10, '#5fb0a3'); R(cx + 9, cb - 11, 2, 2, '#f1e3c6');
       R(cx, cb, 13, 60, '#34525c'); R(cx, cb, 13, 1, '#4d7682'); R(cx, cb, 2, 60, '#3f626d');
     }
-    if (broke) { const sc = L.port ? 1.25 : 2.3; k = kf * sc; ox = fox + (bcx - 17 * sc) * kf; oy = foy + (L.yName + L.name.length * 17 + 3) * kf + (Math.sin(t * 2.2) > 0 ? 0 : 1); iMutant(t, BOSS); }   // and here it is, in the room, standing on your name
+    if (broke) {                                                                                                                    // the first robot, grown enormous, right in front of you. Scrolling makes it lunge.
+      const u = clamp(scrollY / (0.4 * innerHeight), 0, 1), bw = (L.port ? W * 0.96 : Math.min(W * 0.64, H * 0.78)) * (1 + 0.9 * u * u), br = Math.sin(t * 1.3) > 0 ? 0 : 1;
+      k = bw / 60; ox = Math.round(W / 2 + Math.sin(t * 0.7) * 1.5); oy = Math.round(H * (L.port ? 0.34 : 0.27) - u * u * H * 0.1) + br;
+      const out = Math.min(27, ((W - bw) / 2 + bw * 0.06) / k), B = '#2a3035', D = '#1f2428', M = '#2f363c', HI = '#3d464e', SH = '#191d20', st = Math.sin(t * 1.3) > 0 ? 0 : 1.5;
+      for (const sd of [-1, 1]) {                                                                                                   // rear legs, then the body, then the front legs, which run off the bottom of the screen
+        const x0 = sd > 0 ? 30 : -30 - out * 0.55, lx = sd > 0 ? 30 + out * 0.55 - 7 : -30 - out * 0.55;
+        R(x0, 1 + st, out * 0.55, 7, D); R(x0, 1 + st, out * 0.55, 1, M); R(lx, 1 + st, 7, 600, D); R(lx + (sd > 0 ? 5.5 : 0), 8 + st, 1.5, 600, SH); R(lx + 1.5, 2.5 + st, 4, 4, SH); R(lx + 2.5, 3.5 + st, 2, 2, HI);
+      }
+      R(-26, -5, 52, 5, '#39414a'); R(-26, -5, 52, 1, '#4a545e'); R(-26, -1, 52, 1, D);
+      R(-30, 0, 60, 37, B); R(-30, 0, 60, 1.5, HI); R(-30, 0, 1.5, 37, '#333b42'); R(28.5, 0, 1.5, 37, D); R(-30, 34, 60, 3, SH);
+      R(-23.5, 1.5, 0.8, 32.5, D); R(22.7, 1.5, 0.8, 32.5, D);
+      for (const [bx, by] of [[-28, 3], [26, 3], [-28, 30], [26, 30]]) { R(bx, by, 2, 2, '#4a545e'); R(bx + 1, by + 1, 1, 1, SH); }
+      for (let i = 0; i < 6; i++) R(-11 + i * 4, 29.5, 2.4, 3, SH);
+      R(-21, 5, 42, 22, '#14181b'); R(-21, 5, 42, 1, SH); R(-19, 7, 38, 18, '#0a0d0f'); R(-18, 8, 9, 1, '#161c20'); R(-18, 9, 1, 5, '#161c20');
+      const blink = (t % 4.1) < 0.16, ex = (S.ptrX - 0.5) * 3, ey = (S.ptrY - 0.5) * 2, fl = Math.sin(t * 23) > 0.92 ? 0.7 : 1;
+      for (const cx of [-9, 9]) {
+        if (blink) { R(cx - 3.5 + ex, 15.5 + ey, 7, 1, '#b81d12'); continue; }
+        g.globalAlpha = (1 - u) * 0 + fl; glow(cx + ex, 16 + ey, 8.5, '255,40,24', 0.1); glow(cx + ex, 16 + ey, 6.2, '255,40,24', 0.14);
+        R(cx - 3.5 + ex, 12.5 + ey, 7, 7, '#b81d12'); R(cx - 2.5 + ex, 13.5 + ey, 5, 5, '#ff3020'); R(cx - 2.5 + ex, 13.5 + ey, 2, 2, '#ff9a80');
+        for (let i = 0; i < 3; i++) R(cx - 3.5 + ex, 14 + i * 2 + ey, 7, 0.5, 'rgba(10,13,15,.45)'); g.globalAlpha = 1;
+      }
+      for (const sd of [-1, 1]) {
+        const x0 = sd > 0 ? 30 : -30 - out, lx = sd > 0 ? 30 + out - 9 : -30 - out, s2 = 1.5 - st;
+        R(x0, 9 + s2, out, 9, M); R(x0, 9 + s2, out, 1.2, HI); R(x0, 17 + s2, out, 1, D); R(lx, 9 + s2, 9, 600, M); R(lx, 9 + s2, 1.2, 600, HI); R(lx + 7.5, 18 + s2, 1.5, 600, D);
+        R(lx + 2, 11 + s2, 5, 5, D); R(lx + 3.5, 12.5 + s2, 2, 2, '#4a545e'); R(sd > 0 ? 30 : -32, 10.5 + s2, 2, 6, D);
+      }
+      [ox, oy, k] = tr; g.globalAlpha = 1 - u;
+      L.tag.forEach((ln, i) => { const yy = L.yTag + i * 9; R(L.tagX - 2, yy - 1, ln.length * 6 + 3, 9, 'rgba(14,9,16,.72)'); txt(ln, L.tagX, yy, 1, '#ffe7ae', F5, 1); });
+      if (Math.sin(t * 5) > -0.3) { const ax = L.tagX + L.tag[L.tag.length - 1].length * 6 + 4, ay = L.yTag + (L.tag.length - 1) * 9 + 1 + (Math.sin(t * 5) > 0.4 ? 1 : 0); R(ax + 2, ay, 1, 4, '#ffe7ae'); R(ax, ay + 3, 5, 1, '#ffe7ae'); R(ax + 1, ay + 4, 3, 1, '#ffe7ae'); R(ax + 2, ay + 5, 1, 1, '#ffe7ae'); }
+      g.globalAlpha = 1;
+    }
     }
     g = gm; g.drawImage(rc, 0, 0);
   }
@@ -382,7 +416,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   addEventListener('pointerup', () => { S.drag = null; });
   heroSection.addEventListener('click', e => { if (touch && scrollY < 40 && !e.target.closest('button,a')) manual(Math.abs(S.keep) < 0.5 ? CLOSED : 0.05); });
   btnOpen.addEventListener('click', () => { S.pg = 1; manual(0); });
-  btnClose.addEventListener('click', () => { S.pr = 1; if (S.laps >= BROKE) { S.laps = 0; S.flash = 1; S.endManual = false; S.keep = S.target = 0.72; layout(); place(); measure(); if (scrollY > 40) scrollTo({ top: 0, behavior: 'instant' }); return; } manual(CLOSED); });   // once they are in, red resets everything
+  const reset = () => { S.laps = 0; S.flash = 1; S.endManual = false; S.keep = S.target = S.theta = 0.72; layout(); place(); measure(); if (scrollY > 2) scrollTo({ top: 0, behavior: 'instant' }); };   // back to the first visit
+  btnClose.addEventListener('click', () => { S.pr = 1; if (S.laps >= BROKE) return reset(); manual(CLOSED); });
   btnLamp.addEventListener('click', () => { S.lampT = 1 - S.lampT; });
   ws.querySelectorAll('a').forEach(a => { const on = () => { S.hot = a.dataset.k; }, off = () => { if (S.hot === a.dataset.k) S.hot = null; }; a.addEventListener('pointerenter', on); a.addEventListener('focus', on); a.addEventListener('pointerleave', off); a.addEventListener('blur', off); });
 
@@ -411,6 +446,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const t = S.t, zn = zone();
     drawIcons(reduce ? 1 : t);
     if (zn === 'none') { S.zoneWas = zn; if (!buttons.hidden) buttons.hidden = true; if (!ws.hidden) ws.hidden = true; endUi.style.visibility = 'hidden'; return; }
+    if (zn === 'hero' && S.laps >= BROKE && scrollY > 0.4 * innerHeight) { reset(); return; }   // scroll to escape
     const y = scrollY, p = zn === 'hero' ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
     // past the thank-you, the last screen of scroll opens the blind again; reaching the bottom goes round
     const gap = zn === 'end' ? document.documentElement.scrollHeight - innerHeight - y : 1e9, r = zn === 'end' && q >= 1 ? clamp(1 - gap / (OPEN * vh), 0, 1) : 0;
