@@ -185,6 +185,22 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     balance(touch ? 'TAP A PROJECT OR KEEP SCROLLING' : 'PICK A PROJECT OR KEEP SCROLLING', Math.floor((W - 12) / 4)).forEach((ln, i) => txt(ln, Math.round((W - tw(ln)) / 2), by + 24 + i * 7, 1, '#9a7c6e'));
   }
 
+  // The same sprites again, further down the page: each project section opens with its own, under a wall lamp.
+  const ITEM = { blinds: [iBlinds, 26], pickypal: [iLaptop, 36], challenge: [iPhone, 14], robot: [iRobot, 34], next: [iNext, 26] };
+  const icons = [...document.querySelectorAll('canvas[data-icon]')].map(c => { c.width = 48; c.height = 62; return { c, x: c.getContext('2d'), it: ITEM[c.dataset.icon], on: false }; });
+  const iconSeen = new IntersectionObserver(es => es.forEach(e => { const o = icons.find(i => i.c === e.target); if (o) o.on = e.isIntersecting; }), { rootMargin: '120px' });
+  icons.forEach(o => iconSeen.observe(o.c));
+  function drawIcons(t) {
+    for (const o of icons) {
+      if (!o.on || !o.it) continue;
+      g = o.x; g.clearRect(0, 0, 48, 62); ox = oy = 0; k = 1;
+      R(5, 3, 2, 7, '#1d1318'); R(7, 6, 15, 1, '#1d1318'); R(21, 6, 1, 4, '#1d1318');
+      for (let i = 0; i < 4; i++) R(19 - i, 10 + i, 5 + 2 * i, 1, i ? '#2f6f73' : '#3d8a8e');
+      R(20, 14, 3, 2, '#fff1c9'); o.it[0](Math.round((48 - o.it[1]) / 2), 62, t);
+    }
+    g = gm;
+  }
+
   // ---------------------------------------------------------------- the campus at dusk
   function bricks(kb, X0, X1, Y0, Y1) {
     if (kb < 5) return;
@@ -342,6 +358,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
     const t = S.t, zn = zone();
+    drawIcons(reduce ? 1 : t);
     if (zn === 'none') { S.zoneWas = zn; if (!buttons.hidden) buttons.hidden = true; if (!ws.hidden) ws.hidden = true; endUi.style.visibility = 'hidden'; return; }
     const y = scrollY, p = zn === 'hero' ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
     if (zn === 'hero') {                                           // what the motor is asked to do
