@@ -17,7 +17,7 @@ const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a
 const CLOSED = 1.24;          // slat angle when shut, radians
 const FP = 240, HC = 5;       // focal length in art pixels, eye height in metres
 const DB = 80, ZEND = 79.55, DWS = 81.2;   // distance to the lit window, where the camera stops, depth of the workshop
-const G = HC * FP, PATHX = -9.33, EGG = 3, OPEN = 1;   // OPEN: screens of extra scroll at the end that open the blind again (matches .gl.px .end in the CSS)   // EGG: laps before the surprise
+const G = HC * FP, PATHX = -9.33, OPEN = 1;   // OPEN: screens of extra scroll at the end that open the blind again (matches .gl.px .end in the CSS)   // EGG: laps before the surprise
 
 // Two bitmap fonts. Each glyph is one character per row, read as a base-32 number, one bit per pixel.
 const G5 = { A: 'ehhvhhh', B: 'uhhuhhu', C: 'ehggghe', D: 'sihhhis', E: 'vgguggv', F: 'vgguggg', G: 'ehgnhhf', H: 'hhhvhhh', I: 'e44444e', J: '72222ic', K: 'hikokih', L: 'ggggggv', M: 'hrllhhh', N: 'hpljhhh', O: 'ehhhhhe', P: 'uhhuggg', Q: 'ehhhlid', R: 'uhhukih', S: 'fgge11u', T: 'v444444', U: 'hhhhhhe', V: 'hhhhha4', W: 'hhhllla', X: 'hha4ahh', Y: 'hha4444', Z: 'v1248gv', 0: 'ehjlphe', 1: '4c4444e', 2: 'eh1248v', 3: 'v2421he', 4: '26aiv22', 5: 'vgu11he', 6: '68guhhe', 7: 'v124888', 8: 'ehhehhe', 9: 'ehhf12c', '.': '00000cc', ',': '0000c48', "'": '4480000', '-': '000e000', ':': '0cc0cc0', '!': '4444404', '?': 'eh12404' };
@@ -37,12 +37,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   const gm = g, rc = document.createElement('canvas'), gr = rc.getContext('2d');   // the room is drawn on its own layer, so the lamp lights the room and not the view outside
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, touch = matchMedia('(hover: none)').matches;
   const up = el => (el?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
-  const words = { name: [...heroUi.querySelectorAll('h1 span')].map(up).join(' ') || up(heroUi.querySelector('h1')), line: up(heroUi.querySelector('.hero-line')), egg: (heroUi.querySelector('.hero-line').dataset.egg || '').toUpperCase(), end: up(endUi.querySelector('h2')) };
+  const words = { name: [...heroUi.querySelectorAll('h1 span')].map(up).join(' ') || up(heroUi.querySelector('h1')), line: up(heroUi.querySelector('.hero-line')), laps: (heroUi.querySelector('.hero-line').dataset.laps || '').split('|').map(x => x.trim().toUpperCase()).filter(Boolean), end: up(endUi.querySelector('h2')) };
   const LABEL = {}; ws.querySelectorAll('a').forEach(a => { LABEL[a.dataset.k] = (a.dataset.label || a.dataset.k).toUpperCase(); });
 
   let W = 320, H = 180, s = 4, L = {}, sky = null, stars = [];
   let ox = 0, oy = 0, k = 1;            // the current drawing transform: screen = o + world * k, then rounded to whole pixels
   let z = 0, Fx = 0, Fy = 0;            // camera: how far it has flown, and where the lit window sits on screen
+  const BROKE = words.laps.length || 5;   // the lap on which a robot comes through the window
   const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
 
   // ---------------------------------------------------------------- drawing primitives
@@ -70,7 +71,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const gap = W - 2 * mx >= words.name.length * 12 ? 2 : 1, per = Math.floor((W - 2 * mx + gap) / (10 + gap));
     const name = wrap(words.name, per).slice(0, 3), end = wrap(words.end, per).slice(0, name.length);
     const nameH = name.length * 14 + (name.length - 1) * 3;
-    const tx = mx + 1, tagX = tx + 34, tag = balance(S.laps >= EGG && words.egg ? words.egg : words.line, Math.max(10, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 6))).slice(0, 7);
+    const tx = mx + 1, tagX = tx + 34, tag = balance(S.laps && words.laps.length ? words.laps[Math.min(S.laps, words.laps.length) - 1] : words.line, Math.max(10, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 6))).slice(0, 7);
     const sillY = H - (6 + nameH + 5 + tag.length * 9 + 3 + 9 + 3) - 3;
     const wy0 = Math.ceil(60 / s) + 2, wx0 = mx, wx1 = W - mx - hw, P = Math.max(7, Math.round(H / 22));
     const n = Math.ceil((sillY - wy0 - 5) / P), slat0 = wy0 + 5 + P / 2;
@@ -129,11 +130,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   const MUT = (() => { const out = [], rnd = rng(77); let i = 0;
     for (let lv = 0; lv < 6; lv++) for (let n = 0; n <= lv; n++, i++) {
       const f = {}, pool = ['ant', 'legs', 'spikes', 'twin', 'eyes', 'hover', 'tail', 'glow'].sort(() => rnd() - 0.5);
-      pool.slice(0, lv === 0 ? 0 : lv + 1).forEach(q => f[q] = 1);
+      pool.slice(0, lv < 2 ? 0 : lv).forEach(q => f[q] = 1);
       const onPath = i === 0 || rnd() < 0.35, big = lv >= 3 && rnd() < 0.3;
-      out.push({ f, pal: PAL[lv === 0 ? 0 : 1 + Math.floor(rnd() * 5)], eyes: f.eyes ? [1, 3, 4][Math.floor(rnd() * 3)] : 2, w: (2.4 + 0.5 * lv * rnd()) * (big ? 2.3 : 1), sp: 0.8 + rnd() * 0.9, ph: rnd() * 40,
+      if (lv < 2) { rnd(); }
+      out.push({ f, pal: PAL[lv < 2 ? 0 : 1 + Math.floor(rnd() * 5)], eyes: f.eyes ? [1, 3, 4][Math.floor(rnd() * 3)] : 2, w: (2.4 + 0.5 * lv * rnd()) * (big ? 2.3 : 1), sp: 0.8 + rnd() * 0.9, ph: rnd() * 40,
         x: onPath ? PATHX + (rnd() - 0.5) * 2 : -34 + rnd() * 60, ax: onPath ? 0.4 : 2 + rnd() * 5, d: i === 0 ? 30 : 10 + rnd() * 58, ad: 3 + rnd() * 6 });
     } return out; })();
+  const BOSS = { f: { twin: 1, spikes: 1, legs: 1, ant: 1, tail: 1, glow: 1 }, pal: PAL[5], eyes: 3 };
   function iMutant(t, m) {
     const f = m.f, [B, D, M, E] = m.pal, x = 0, hov = f.hover ? 5 + Math.round(Math.sin(t * 3)) : 0, y = -hov;
     const a = f.hover ? 1 : Math.sin(t * 5) > 0 ? 1 : 0, b = f.hover ? 1 : 1 - a, bl = Math.sin(t * 4) > 0;
@@ -273,7 +276,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     if (kb < 9) {
       g.fillStyle = '#15132e'; g.fillRect(0, 0, W, H); g.drawImage(sky, dx, dy);
       for (const st of stars) if (Math.sin(t * st[3] + st[2]) > -0.3) { g.fillStyle = st[3] > 1.6 ? '#fff1c9' : '#b9b3d8'; g.fillRect(st[0] + dx, st[1] + dy, 1, 1); }
-      if (S.laps >= EGG) { const u = (t % 6) / 0.9; if (u < 1) { const sx = Math.round(W * (0.85 - 0.5 * u)) + dx + 48, sy = Math.round(H * (0.06 + 0.16 * u)) + dy + 48; for (let i = 0; i < 7; i++) { g.globalAlpha = (1 - i / 7) * Math.sin(Math.PI * u); g.fillStyle = i ? '#ffd9a0' : '#fff6dc'; g.fillRect(sx + i * 2, sy - i, 2, 1); } g.globalAlpha = 1; } }
+      if (S.laps >= 3) { const u = (t % 6) / 0.9; if (u < 1) { const sx = Math.round(W * (0.85 - 0.5 * u)) + dx + 48, sy = Math.round(H * (0.06 + 0.16 * u)) + dy + 48; for (let i = 0; i < 7; i++) { g.globalAlpha = (1 - i / 7) * Math.sin(Math.PI * u); g.fillStyle = i ? '#ffd9a0' : '#fff6dc'; g.fillRect(sx + i * 2, sy - i, 2, 1); } g.globalAlpha = 1; } }
       k = 200 / (200 - z); ox = Fx; oy = Fy; const rnd = rng(5);                                                                    // far tree line
       for (let x = -300; x < 300; x += 6) { const h = 3 + rnd() * 6; R(x, 6 - h, 7, h + 2, '#2a2342'); }
     } else { g.fillStyle = '#7b3d46'; g.fillRect(0, 0, W, H); }
@@ -283,7 +286,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     }
     k = kb; ox = Fx; oy = Fy; hall(t, kb);
     const wd = 52 + 7 * Math.sin(t * 0.07);
-    const bots = MUT.slice(0, Math.min(MUT.length, S.laps * (S.laps + 1) / 2)).map(m => [m.x + m.ax * Math.sin(t * 0.11 * m.sp + m.ph), m.d + m.ad * Math.sin(t * 0.09 * m.sp + m.ph * 2), -2, m]);
+    const near = S.laps >= 4 ? 0.5 : 1;                                                                         // from lap four they close in
+    const bots = MUT.slice(0, Math.min(MUT.length, S.laps * (S.laps + 1) / 2)).map(m => [(m.x + m.ax * Math.sin(t * 0.11 * m.sp + m.ph)) * near, Math.max(m.w * 3.2, 4 + (m.d + m.ad * Math.sin(t * 0.09 * m.sp + m.ph * 2)) * near), -2, m]);
     for (const o of [...OBJ, [PATHX + 0.5, wd, -1], ...bots].sort((a, b) => b[1] - a[1])) {
       const dz = o[1] - z; if (dz < 1.5) continue;
       k = FP / dz; ox = Fx + o[0] * k; oy = Fy + HC * k;
@@ -308,10 +312,20 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       if (band >= 2) { R(wx0, top + band - 1, ww, 1, '#281d26'); if (part) R(wx0, theta > 0 ? top : top + band - 1, ww, 1, '#b56f5e'); }
     }
     R1(wx0 + ww * 0.27, wy0 + 5, 1, sillY - wy0 - 5, '#54434e'); R1(wx0 + ww * 0.73, wy0 + 5, 1, sillY - wy0 - 5, '#54434e');
+    const broke = S.laps >= BROKE, bcx = Math.round(wx0 + ww * (L.port ? 0.66 : 0.62));
+    if (broke) {                                                                                                                    // something came through: a hole in the blind, cracked glass around it
+      const hr = (sillY - wy0) * 0.34, hcy = sillY - hr * 0.75, hwd = Math.min(hr * 1.25, ww * 0.3), jag = v => 0.72 + 0.28 * Math.abs(Math.sin(v * 12.9898) * 43758.5453 % 1);
+      for (let dy = -hr; dy < hr; dy++) { const yy = hcy + dy; if (yy < wy0 + 5 || yy >= sillY) continue; const w = hwd * Math.sqrt(1 - dy * dy / (hr * hr)) * jag(Math.round(dy)), w2 = hwd * Math.sqrt(1 - dy * dy / (hr * hr)) * jag(Math.round(dy) + 99);
+        const x0 = Math.round(ox + (bcx - w) * k), x1 = Math.round(ox + (bcx + w2) * k), y0 = Math.round(oy + yy * k), y1 = Math.round(oy + (yy + 1) * k); if (x1 > x0 && y1 > y0) g.clearRect(x0, y0, x1 - x0, y1 - y0); }
+      for (let i = 0; i < 9; i++) { const an = -Math.PI * (0.04 + i / 8 * 0.92) + 0.2 * Math.sin(i * 7.1), len = hr * (0.5 + 0.5 * jag(i + 3)); let wob = 0;
+        for (let r = 0.8; r < 1 + len / hr; r += 0.5 / hr) { wob += (jag(i * 31 + Math.round(r * hr)) - 0.86) * 0.5; const cxx = bcx + Math.cos(an) * hwd * r + wob * Math.sin(an) * 2, cyy = hcy + Math.sin(an) * hr * r - wob * Math.cos(an) * 2; if (cxx > wx0 && cxx < wx1 - 1 && cyy > wy0 + 5 && cyy < sillY - 1) R1(cxx, cyy, 1, 1, i & 1 ? '#cfe8ee' : '#9fc4cf'); } }
+      for (let i = 0; i < 7; i++) { const sx = bcx + (jag(i + 50) - 0.86) * hwd * 9; R1(sx, sillY - 1 - (i % 3 === 0 ? 1 : 0), 1 + (i & 1), 1 + (i % 3 === 0 ? 1 : 0), i & 1 ? '#cfe8ee' : '#9fc4cf'); }
+    }
     R(wx0 - 1, wy0, ww + 2, 5, '#4f3e49'); R(wx0 - 1, wy0, ww + 2, 1, '#6c5864'); R(wx0 - 1, wy0 + 4, ww + 2, 1, '#33262e');           // head rail, then the button box beside it
     R(hx, hy, hw, hh, '#5b4a54'); R(hx, hy, hw, 1, '#7a6672'); R(hx + hw - 1, hy, 1, hh, '#43363f'); R(hx, hy + hh - 1, hw, 1, '#43363f');
     const btn = (x, y, c, d, hi, pr) => { const r = L.br; R(x - r - 0.5, y - r - 0.5, 2 * r + 1, 2 * r + 1, '#1c151b'); R(x - r, y - r, 2 * r, 2 * r, pr > 0.3 ? d : c); if (pr <= 0.3) R1(x - r, y - r, 1, 1, hi); };
     btn(L.gx, L.gy, '#25B862', '#17723c', '#8ff0b6', S.pg); btn(L.rx, L.ry, '#C2332B', '#7d1f1a', '#f08a80', S.pr);
+    if (broke && Math.sin(t * 6) > 0) { const r = L.br + 1.5; R(L.rx - r, L.ry - r, 2 * r, 1, '#ffb0a0'); R(L.rx - r, L.ry + r - 1, 2 * r, 1, '#ffb0a0'); R(L.rx - r, L.ry - r, 1, 2 * r, '#ffb0a0'); R(L.rx + r - 1, L.ry - r, 1, 2 * r, '#ffb0a0'); }
     R1((L.gx + L.rx) / 2 - 0.5, Math.max(L.gy, L.ry) + (L.port ? 6 : 3.5), 1, 1, S.led > 0.5 ? '#9fd8ff' : '#2a3442');
     R(wx0 - 4, sillY, ww + hw + 8, 2, '#6a4c50'); R(wx0 - 4, sillY + 2, ww + hw + 8, 1, '#3a2830');                                    // sill, and what lives on it
     const bx = wx0 + Math.round(ww * 0.06), px = wx0 + Math.round(ww * 0.82), cy = '#35e0d0';
@@ -339,7 +353,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     }
     if (!endMode) {
       L.tag.forEach((ln, i) => { let x = L.tagX; const yy = L.yTag + i * 9; for (const ch of ln) { glyph(F5, ch, x, yy, 1, RAMP[Math.max(3, shade(ox + x * k, oy + yy * k) - 1)]); x += 6; } });
-      if (fade > 0.02) { g.globalAlpha = fade; { const wide = W - L.tagX - L.mx >= 130, hint = S.laps ? (wide ? 'LAP ' + (S.laps + 1) + ': SCROLL AGAIN' : 'LAP ' + (S.laps + 1)) : wide ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
+      if (fade > 0.02) { g.globalAlpha = fade; { const wide = W - L.tagX - L.mx >= 130, hint = S.laps >= BROKE ? (wide ? 'PRESS RED TO RESET' : 'PRESS RED') : S.laps ? (wide ? 'LAP ' + (S.laps + 1) + ': SCROLL AGAIN' : 'LAP ' + (S.laps + 1)) : wide ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (S.laps < BROKE && Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
     }
     if (kf) {
     k = kf; ox = fox; oy = foy;
@@ -352,6 +366,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       const cx = W - L.mx - 14, cb = H - 11; R(cx + 2, cb - 11, 2, 12, '#e0902e'); R(cx + 2, cb - 13, 2, 2, '#f1e3c6'); R(cx + 6, cb - 14, 2, 15, '#c2332b'); R(cx + 9, cb - 9, 2, 10, '#5fb0a3'); R(cx + 9, cb - 11, 2, 2, '#f1e3c6');
       R(cx, cb, 13, 60, '#34525c'); R(cx, cb, 13, 1, '#4d7682'); R(cx, cb, 2, 60, '#3f626d');
     }
+    if (broke) { const sc = L.port ? 1.25 : 2.3; k = kf * sc; ox = fox + (bcx - 17 * sc) * kf; oy = foy + (L.yName + L.name.length * 17 + 3) * kf + (Math.sin(t * 2.2) > 0 ? 0 : 1); iMutant(t, BOSS); }   // and here it is, in the room, standing on your name
     }
     g = gm; g.drawImage(rc, 0, 0);
   }
@@ -367,7 +382,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   addEventListener('pointerup', () => { S.drag = null; });
   heroSection.addEventListener('click', e => { if (touch && scrollY < 40 && !e.target.closest('button,a')) manual(Math.abs(S.keep) < 0.5 ? CLOSED : 0.05); });
   btnOpen.addEventListener('click', () => { S.pg = 1; manual(0); });
-  btnClose.addEventListener('click', () => { S.pr = 1; manual(CLOSED); });
+  btnClose.addEventListener('click', () => { S.pr = 1; if (S.laps >= BROKE) { S.laps = 0; S.flash = 1; S.endManual = false; S.keep = S.target = 0.72; layout(); place(); measure(); if (scrollY > 40) scrollTo({ top: 0, behavior: 'instant' }); return; } manual(CLOSED); });   // once they are in, red resets everything
   btnLamp.addEventListener('click', () => { S.lampT = 1 - S.lampT; });
   ws.querySelectorAll('a').forEach(a => { const on = () => { S.hot = a.dataset.k; }, off = () => { if (S.hot === a.dataset.k) S.hot = null; }; a.addEventListener('pointerenter', on); a.addEventListener('focus', on); a.addEventListener('pointerleave', off); a.addEventListener('blur', off); });
 
@@ -405,8 +420,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       if (!S.endManual) S.target = r > 0 ? mix(CLOSED, 0, smooth(0, 0.8, r)) : mix(0.02, CLOSED, smooth(0.25, 0.92, q));
     }
     if (zn === 'end' && S.theta < 0.15 && ((S.endManual && S.target < 0.1) || (!S.endManual && OPEN && gap < 6))) {   // opened again at the end: round we go, back to the top with the blind open
-      S.laps++; S.keep = S.target = 0; S.endManual = false; S.flash = 1; scrollTo({ top: 0, behavior: 'instant' });
-      if (S.laps === EGG) { layout(); place(); measure(); }
+      S.laps = Math.min(BROKE, S.laps + 1); S.keep = S.target = 0; S.endManual = false; S.flash = 1; scrollTo({ top: 0, behavior: 'instant' });
+      layout(); place(); measure();
       S.zoneWas = 'hero'; return;
     }
     S.zoneWas = zn;
