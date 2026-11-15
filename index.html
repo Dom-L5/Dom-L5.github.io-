@@ -282,6 +282,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 /* ---------- the project pages: the same wall, lamps and lettering as the opening ---------- */
 :root { --u: 4px; --pixel: "Pixelify Sans", "Archivo", sans-serif; --tape: #F1E3C6; --tape-ink: #3A2530; --amber: #FFCF70; }
 .sheet::before { content: ""; display: block; height: calc(4 * var(--u)); background: linear-gradient(#D29C60 0 var(--u), #B07A48 0); box-shadow: 0 var(--u) 0 #170F15; }
+.intro h2, .project h2, .bar-name { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }   /* the pixel font joins f and i into one odd shape */
 .intro h2, .project h2 { font-family: var(--pixel); font-weight: 500; font-variation-settings: normal; letter-spacing: 0; line-height: 1.04; }
 .intro h2 { font-size: clamp(26px, 3.2vw, 48px); max-width: 24ch; }
 .project h2 { font-size: clamp(28px, 4vw, 60px); max-width: 19ch; }
@@ -336,6 +337,11 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
   .station h2 { grid-area: 3 / 1; padding: calc(9 * var(--u)) 0 0; }
   .plank { grid-area: 2 / 1; }
 }
+
+/* The pixel font's digits are hard to tell apart (5 and S, 2 and a), so dates and numbers use the plain face, bold and narrow. */
+.when, .status, .parts .n, .score .big, .spec td { font-family: var(--body); font-variation-settings: "wdth" 80; font-weight: 700; letter-spacing: 0; }
+.when { font-size: 14px; line-height: 1.2; }
+.score .big { font-variation-settings: "wdth" 100; font-weight: 800; letter-spacing: -.02em; }
 </style>
 </head>
 <body>

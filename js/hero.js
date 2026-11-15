@@ -70,13 +70,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const gap = W - 2 * mx >= words.name.length * 12 ? 2 : 1, per = Math.floor((W - 2 * mx + gap) / (10 + gap));
     const name = wrap(words.name, per).slice(0, 3), end = wrap(words.end, per).slice(0, name.length);
     const nameH = name.length * 14 + (name.length - 1) * 3;
-    const tx = mx + 1, tagX = tx + 34, tag = balance(words.line, Math.max(12, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 4))).slice(0, 5);
-    const sillY = H - (6 + nameH + 5 + tag.length * 7 + 2 + 7 + 3) - 3;
+    const tx = mx + 1, tagX = tx + 34, tag = balance(words.line, Math.max(10, Math.floor((W - tagX - mx - (port ? 0 : 24) + 1) / 6))).slice(0, 7);
+    const sillY = H - (6 + nameH + 5 + tag.length * 9 + 3 + 9 + 3) - 3;
     const wy0 = Math.ceil(60 / s) + 2, wx0 = mx, wx1 = W - mx - hw, P = Math.max(7, Math.round(H / 22));
     const n = Math.ceil((sillY - wy0 - 5) / P), slat0 = wy0 + 5 + P / 2;
     let gi = 0; for (let i = 0; i < n - 1; i++) if (slat0 + (i + 0.5) * P < wy0 + (sillY - wy0) * 0.47) gi = i;
     const yName = sillY + 9, yTag = yName + nameH + 5, hx = wx1 - 1, hy = wy0 - 1;
-    L = { port, mx, wx0, wx1, wy0, sillY, P, n, slat0, name, end, gap, tag, tx, tagX, yName, yTag, yHint: yTag + tag.length * 7 + 2, lx: tx + 14, lampTop: yName + nameH + 3,
+    L = { port, mx, wx0, wx1, wy0, sillY, P, n, slat0, name, end, gap, tag, tx, tagX, yName, yTag, yHint: yTag + tag.length * 9 + 3, lx: tx + 14, lampTop: yName + nameH + 3,
       F0x: Math.round(wx0 + (wx1 - wx0) * (port ? 0.5 : 0.6)), F0y: slat0 + (gi + 0.5) * P, hx, hy, hw, hh: port ? 36 : 15,
       gx: port ? hx + 7.5 : hx + 5, gy: port ? hy + 12 : hy + 9, rx: port ? hx + 7.5 : hx + 12, ry: port ? hy + 27 : hy + 9, br: port ? 2.5 : 1.5 };
     L.ws = wsLayout(); makeSky(); g.imageSmoothingEnabled = false;
@@ -178,11 +178,11 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     glow(I.pickypal.x + 18, I.pickypal.y - 13, 15, '255,236,214', 0.06);
     if (!full) return;
     for (const q in I) {                                                                                                                                // labels and the highlight
-      const it = I[q], lab = LABEL[q] || q.toUpperCase(), w = tw(lab), x = Math.round(it.x + it.w / 2 - w / 2), y = it.y + (it.y === by ? 6 : 5), hot = S.hot === q;
-      R(x - 2, y, w + 4, 7, hot ? '#25B862' : '#f1e3c6'); txt(lab, x, y + 1, 1, hot ? '#08240f' : '#3a2530');
+      const it = I[q], lab = LABEL[q] || q.toUpperCase(), w = tw(lab, 1, F5), x = Math.round(it.x + it.w / 2 - w / 2), y = it.y + (it.y === by ? 6 : 5), hot = S.hot === q;
+      R(x - 2, y, w + 4, 9, hot ? '#25B862' : '#f1e3c6'); txt(lab, x, y + 1, 1, hot ? '#08240f' : '#3a2530', F5, 1);
       if (hot) { const x0 = it.x - 3, y0 = it.y - it.h - 3, x1 = it.x + it.w + 3, c = '#ffe9c2'; R(x0, y0, 4, 1, c); R(x0, y0, 1, 4, c); R(x1 - 4, y0, 4, 1, c); R(x1 - 1, y0, 1, 4, c); }
     }
-    balance(touch ? 'TAP A PROJECT OR KEEP SCROLLING' : 'PICK A PROJECT OR KEEP SCROLLING', Math.floor((W - 12) / 4)).forEach((ln, i) => txt(ln, Math.round((W - tw(ln)) / 2), by + 24 + i * 7, 1, '#9a7c6e'));
+    balance(touch ? 'TAP A PROJECT OR KEEP SCROLLING' : 'PICK A PROJECT OR KEEP SCROLLING', Math.floor((W - 12) / 6)).forEach((ln, i) => txt(ln, Math.round((W - tw(ln, 1, F5)) / 2), by + 26 + i * 9, 1, '#9a7c6e', F5, 1));
   }
 
   // The same sprites again, further down the page: each project section opens with its own, under a wall lamp.
@@ -305,8 +305,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       y += 17;
     }
     if (!endMode) {
-      L.tag.forEach((ln, i) => { let x = L.tagX; const yy = L.yTag + i * 7; for (const ch of ln) { glyph(F3, ch, x, yy, 1, RAMP[Math.max(3, shade(ox + x * k, oy + yy * k) - 1)]); x += 4; } });
-      if (fade > 0.02) { g.globalAlpha = fade; txt('SCROLL TO GO THROUGH', L.tagX, L.yHint, 1, RAMP[2]); if (Math.sin(t * 3) > -0.2) glyph(F3, '>', L.tagX + 84, L.yHint + (Math.sin(t * 3) > 0.5 ? 1 : 0), 1, RAMP[4]); g.globalAlpha = 1; }
+      L.tag.forEach((ln, i) => { let x = L.tagX; const yy = L.yTag + i * 9; for (const ch of ln) { glyph(F5, ch, x, yy, 1, RAMP[Math.max(3, shade(ox + x * k, oy + yy * k) - 1)]); x += 6; } });
+      if (fade > 0.02) { g.globalAlpha = fade; { const hint = W - L.tagX - L.mx >= 130 ? 'SCROLL TO GO THROUGH' : 'SCROLL DOWN'; txt(hint, L.tagX, L.yHint, 1, RAMP[2], F5, 1); if (Math.sin(t * 3) > -0.2) { const ax = L.tagX + tw(hint, 1, F5) + 3, ay = L.yHint + 1 + (Math.sin(t * 3) > 0.5 ? 1 : 0); R(ax + 2, ay, 1, 4, RAMP[4]); R(ax, ay + 3, 5, 1, RAMP[4]); R(ax + 1, ay + 4, 3, 1, RAMP[4]); R(ax + 2, ay + 5, 1, 1, RAMP[4]); } } g.globalAlpha = 1; }
     }
     if (kf) {
     k = kf; ox = fox; oy = foy;
