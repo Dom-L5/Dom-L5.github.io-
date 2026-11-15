@@ -669,5 +669,22 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 <script type="module" src="js/main.js"></script>
+<script>
+/* Resume download. On a normal host the plain link downloads the PDF.
+   Inside the claude.ai preview, links can't download, so hand the file over through the viewer instead. */
+(function () {
+  if (!window.claude || !window.claude.use) return;
+  var dl = null;
+  window.claude.use("downloads").then(function (d) { dl = d; }, function () {});
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[download][href$=".pdf"]');
+    if (!a || !dl) return;
+    e.preventDefault();
+    fetch(a.getAttribute("href")).then(function (r) { return r.blob(); })
+      .then(function (b) { return dl.save({ filename: a.getAttribute("download"), data: b }); })
+      .catch(function () {});
+  });
+})();
+</script>
 </body>
 </html>
