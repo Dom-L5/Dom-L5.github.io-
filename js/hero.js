@@ -124,6 +124,36 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const f = Math.sin(t * 9) > 0 ? 1 : 0; R(x + 6, y - 19 - f, 2, 3 + f, '#ff9b3d'); R(x + 5, y - 17, 4, 3, '#ff7a2a'); R(x + 6, y - 16, 2, 2, '#ffe08a');
     for (let i = 0; i < 9; i++) R(x + 4 + (i % 3) * 2.2, y - 12 + ((i / 3) | 0) * 2.2, 1.4, 1.4, i < 6 ? '#59d08a' : '#4a4358');   // the streak grid, stopped short
   }
+  // Every lap lets more robots out, and each batch is stranger than the last. Edit PAL or the feature list to change them.
+  const PAL = [['#2a3035', '#22272c', '#2f363c', '#35e0d0'], ['#2f5a3a', '#1c3a26', '#3f7a4c', '#c8ff5a'], ['#5a2a52', '#3a1a38', '#7a3a70', '#ff7ad9'], ['#6a4a1e', '#46300f', '#8c6428', '#ffd24a'], ['#28486a', '#182e48', '#3a648e', '#bfe9ff'], ['#6a2626', '#461616', '#8e3434', '#ff5a3c']];
+  const MUT = (() => { const out = [], rnd = rng(77); let i = 0;
+    for (let lv = 0; lv < 6; lv++) for (let n = 0; n <= lv; n++, i++) {
+      const f = {}, pool = ['ant', 'legs', 'spikes', 'twin', 'eyes', 'hover', 'tail', 'glow'].sort(() => rnd() - 0.5);
+      pool.slice(0, lv === 0 ? 0 : lv + 1).forEach(q => f[q] = 1);
+      const onPath = i === 0 || rnd() < 0.35, big = lv >= 3 && rnd() < 0.3;
+      out.push({ f, pal: PAL[lv === 0 ? 0 : 1 + Math.floor(rnd() * 5)], eyes: f.eyes ? [1, 3, 4][Math.floor(rnd() * 3)] : 2, w: (2.4 + 0.5 * lv * rnd()) * (big ? 2.3 : 1), sp: 0.8 + rnd() * 0.9, ph: rnd() * 40,
+        x: onPath ? PATHX + (rnd() - 0.5) * 2 : -34 + rnd() * 60, ax: onPath ? 0.4 : 2 + rnd() * 5, d: i === 0 ? 30 : 10 + rnd() * 58, ad: 3 + rnd() * 6 });
+    } return out; })();
+  function iMutant(t, m) {
+    const f = m.f, [B, D, M, E] = m.pal, x = 0, hov = f.hover ? 5 + Math.round(Math.sin(t * 3)) : 0, y = -hov;
+    const a = f.hover ? 1 : Math.sin(t * 5) > 0 ? 1 : 0, b = f.hover ? 1 : 1 - a, bl = Math.sin(t * 4) > 0;
+    if (f.glow) { glow(17, y - 9, 20, E === '#35e0d0' ? '53,224,208' : parseInt(E.slice(1, 3), 16) + ',' + parseInt(E.slice(3, 5), 16) + ',' + parseInt(E.slice(5, 7), 16), 0.16); }
+    if (f.hover) { R(x + 8, -1, 18, 1, '#1a2a26'); const wy = bl ? -3 : 1; R(x + 3, y - 15 + wy, 8, 2, E); R(x + 23, y - 15 + wy, 8, 2, E); R(x + 13, y - 4, 2, 2 + (bl ? 1 : 0), '#ffb347'); R(x + 19, y - 4, 2, 2 + (bl ? 0 : 1), '#ffb347'); }
+    if (f.tail) { R(x + 23, y - 12, 6, 2, D); R(x + 28, y - 17 - a, 2, 6, D); R(x + 27, y - 19 - a, 4, 2, E); }
+    R(x + 7, y - 8 - b, 5, 2, D); R(x + 7, y - 8 - b, 2, 8 - b - hov * 0.6, D); R(x + 22, y - 8 - a, 5, 2, D); R(x + 25, y - 8 - a, 2, 8 - a - hov * 0.6, D);
+    if (!f.hover) { R(x + 5, y - 2 - 2 * b, 5, 2, D); R(x + 24, y - 2 - 2 * a, 5, 2, D); }
+    if (f.legs) { R(x - 2, y - 12 - b, 9, 2, D); R(x - 3, y - 12 - b, 2, 12 - b - hov * 0.6, D); R(x + 27, y - 12 - a, 9, 2, D); R(x + 35, y - 12 - a, 2, 12 - a - hov * 0.6, D); }
+    R(x + 3, y - 10 - a, 8, 2, M); R(x + 2, y - 10 - a, 2, 10 - a - hov * 0.6, M); R(x + 23, y - 10 - b, 8, 2, M); R(x + 30, y - 10 - b, 2, 10 - b - hov * 0.6, M);
+    if (!f.hover) { R(x, y - 2 - 2 * a, 5, 2, M); R(x + 29, y - 2 - 2 * b, 5, 2, M); }
+    R(x + 11, y - 13, 12, 8, B); R(x + 12, y - 15, 10, 2, M); R(x + 13, y - 11, 8, 4, '#0c0f11');
+    let top = y - 15;
+    if (f.twin) { R(x + 15, y - 18, 4, 3, D); R(x + 12, y - 25, 10, 7, B); R(x + 13, y - 23, 8, 3, '#0c0f11'); R(x + 14, y - 22, 2, 1, E); R(x + 18, y - 22, 2, 1, E); top = y - 25; }
+    if (f.spikes) { R(x + 12, top - 2, 2, 2, E); R(x + 16, top - 4, 2, 4, E); R(x + 20, top - 2, 2, 2, E); }
+    if (f.ant) { R(x + 22, top - 6, 1, 6, D); if (bl) R(x + 21, top - 8, 3, 2, E); else R(x + 22, top - 7, 1, 1, E); }
+    const e = (t % 3.7) < 0.14 ? 1 : 2;
+    if (m.eyes === 1) R(x + 15, y - 11, 4, e + 1, E); else if (m.eyes === 3) { R(x + 14, y - 10, 2, e, E); R(x + 17, y - 11, 1, e, E); R(x + 19, y - 10, 2, e, E); }
+    else if (m.eyes === 4) { for (let i = 0; i < 4; i++) R(x + 13.5 + i * 2, y - 11 + (i & 1), 1, e, E); } else { R(x + 14, y - 10, 2, e, E); R(x + 18, y - 10, 2, e, E); }
+  }
   function iRobot(x, y, t) {
     const a = Math.sin(t * 5) > 0 ? 1 : 0, b = 1 - a, D = '#22272c', M = '#2f363c';
     R(x + 7, y - 8 - b, 5, 2, D); R(x + 7, y - 8 - b, 2, 8 - b, D); R(x + 5, y - 2 - 2 * b, 5, 2, D); R(x + 22, y - 8 - a, 5, 2, D); R(x + 25, y - 8 - a, 2, 8 - a, D); R(x + 24, y - 2 - 2 * a, 5, 2, D);
@@ -253,12 +283,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     }
     k = kb; ox = Fx; oy = Fy; hall(t, kb);
     const wd = 52 + 7 * Math.sin(t * 0.07);
-    for (const o of [...OBJ, [PATHX + 0.5, wd, -1]].sort((a, b) => b[1] - a[1])) {
+    const bots = MUT.slice(0, Math.min(MUT.length, S.laps * (S.laps + 1) / 2)).map(m => [m.x + m.ax * Math.sin(t * 0.11 * m.sp + m.ph), m.d + m.ad * Math.sin(t * 0.09 * m.sp + m.ph * 2), -2, m]);
+    for (const o of [...OBJ, [PATHX + 0.5, wd, -1], ...bots].sort((a, b) => b[1] - a[1])) {
       const dz = o[1] - z; if (dz < 1.5) continue;
       k = FP / dz; ox = Fx + o[0] * k; oy = Fy + HC * k;
       if (o[2] > 0) { const c = TREES[o[2] - 1], q = o[3]; R1(-0.3, -3.2, 0.6, 3.2, '#3a2630'); disc(0, -6.2, 3.3 * q, c[0]); disc(-2.1 * q, -4.9, 2.3 * q, c[0]); disc(2.2 * q, -5.1, 2.4 * q, c[0]); disc(-0.6 * q, -7.1, 2.3 * q, c[1]); disc(-1.3 * q, -7.9, 1.2 * q, c[2]); }
       else if (o[2] === 0) { R1(-0.07, -4, 0.14, 4, '#231b2b'); R1(-0.3, -4.6, 0.6, 0.6, '#ffe2a0'); glow(0, -4.3, 1.9, '255,180,100', 0.14); glow(0, -4.3, 0.9, '255,200,120', 0.2); }
-      else if (S.laps >= EGG) { k = k * 2.6 / 34; ox -= 17 * k; iRobot(0, 0, t * 1.6); }                                         // after a few laps the robot gets out for a walk
+      else if (o[2] < -1) { const m = o[3], sc = m.w / 34; k *= sc; ox -= 17 * k; iMutant(t * m.sp + m.ph, m); }                 // the robots that got out
       else { R1(-0.25, -1.5, 0.5, 1.5, '#2b2145'); R1(-0.2, -1.9, 0.4, 0.4, '#e8c3a0'); }                                           // someone walking the path
     }
   }
