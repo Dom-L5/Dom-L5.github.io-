@@ -17,7 +17,7 @@ const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a
 const CLOSED = 1.24;          // slat angle when shut, radians
 const FP = 240, HC = 5;       // focal length in art pixels, eye height in metres
 const DB = 80, ZEND = 79.55, DWS = 81.2;   // distance to the lit window, where the camera stops, depth of the workshop
-const G = HC * FP, PATHX = -9.33, OPEN = 1;   // OPEN: screens of extra scroll at the end that open the blind again (matches .gl.px .end in the CSS)   // EGG: laps before the surprise
+const G = HC * FP, PATHX = -9.33, OPEN = 1, ESC = 1.6;   // ESC: screens of scroll it takes to fill the escape bar;   // OPEN: screens of extra scroll at the end that open the blind again (matches .gl.px .end in the CSS)   // EGG: laps before the surprise
 
 // Two bitmap fonts. Each glyph is one character per row, read as a base-32 number, one bit per pixel.
 const G5 = { A: 'ehhvhhh', B: 'uhhuhhu', C: 'ehggghe', D: 'sihhhis', E: 'vgguggv', F: 'vgguggg', G: 'ehgnhhf', H: 'hhhvhhh', I: 'e44444e', J: '72222ic', K: 'hikokih', L: 'ggggggv', M: 'hrllhhh', N: 'hpljhhh', O: 'ehhhhhe', P: 'uhhuggg', Q: 'ehhhlid', R: 'uhhukih', S: 'fgge11u', T: 'v444444', U: 'hhhhhhe', V: 'hhhhha4', W: 'hhhllla', X: 'hha4ahh', Y: 'hha4444', Z: 'v1248gv', 0: 'ehjlphe', 1: '4c4444e', 2: 'eh1248v', 3: 'v2421he', 4: '26aiv22', 5: 'vgu11he', 6: '68guhhe', 7: 'v124888', 8: 'ehhehhe', 9: 'ehhf12c', '.': '00000cc', ',': '0000c48', "'": '4480000', '-': '000e000', ':': '0cc0cc0', '!': '4444404', '?': 'eh12404' };
@@ -44,7 +44,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   let ox = 0, oy = 0, k = 1;            // the current drawing transform: screen = o + world * k, then rounded to whole pixels
   let z = 0, Fx = 0, Fy = 0;            // camera: how far it has flown, and where the lit window sits on screen
   const BROKE = words.laps.length || 5;   // the lap on which a robot comes through the window
-  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
+  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, esc: 0, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
 
   // ---------------------------------------------------------------- drawing primitives
   function R(x, y, w, h, c) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k), x1 = Math.round(ox + (x + w) * k), y1 = Math.round(oy + (y + h) * k); if (x1 <= x0 || y1 <= y0 || x1 < 0 || y1 < 0 || x0 > W || y0 > H) return; g.fillStyle = c; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
@@ -136,6 +136,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       out.push({ f, pal: PAL[lv < 2 ? 0 : 1 + Math.floor(rnd() * 5)], eyes: f.eyes ? [1, 3, 4][Math.floor(rnd() * 3)] : 2, w: (2.4 + 0.5 * lv * rnd()) * (big ? 2.3 : 1), sp: 0.8 + rnd() * 0.9, ph: rnd() * 40,
         x: onPath ? PATHX + (rnd() - 0.5) * 2 : -34 + rnd() * 60, ax: onPath ? 0.4 : 2 + rnd() * 5, d: i === 0 ? 30 : 10 + rnd() * 58, ad: 3 + rnd() * 6 });
     } return out; })();
+  const BACK = [{ x: -27, d: 112, w: 46, ph: 1, pal: PAL[2], eyes: 3, f: { ant: 1, spikes: 1, legs: 1 } }, { x: 26, d: 124, w: 62, ph: 4, pal: PAL[5], eyes: 1, f: { twin: 1, tail: 1, legs: 1 } }, { x: 2, d: 140, w: 60, ph: 7, pal: PAL[1], eyes: 4, f: { spikes: 1, ant: 1, twin: 1 } }, { x: -52, d: 150, w: 80, ph: 9, pal: PAL[4], eyes: 3, f: { legs: 1, ant: 1 } }];
   function iMutant(t, m) {
     const f = m.f, [B, D, M, E] = m.pal, x = 0, hov = f.hover ? 5 + Math.round(Math.sin(t * 3)) : 0, y = -hov;
     const a = f.hover ? 1 : Math.sin(t * 5) > 0 ? 1 : 0, b = f.hover ? 1 : 1 - a, bl = Math.sin(t * 4) > 0;
@@ -283,6 +284,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       const dz = G / (y + 0.5 - Fy), d = z + dz; g.fillStyle = (Math.floor(d / 7) & 1) ? '#27463c' : '#2c4e41'; g.fillRect(0, y, W, 1);
       if (d < DB) { const kk = FP / dz, xc = Fx + PATHX * kk, hw = 1.6 * kk; g.fillStyle = (Math.floor(d / 3.5) & 1) ? '#b59a78' : '#a88d6e'; g.fillRect(Math.round(xc - hw), y, Math.max(1, Math.round(2 * hw)), 1); }
     }
+    if (kb < 9) for (let i = 0; i < Math.min(BACK.length, S.laps - 2); i++) { const m = BACK[i], dz = m.d - z; k = FP / dz * m.w / 34; ox = Fx + (m.x + 3 * Math.sin(t * 0.13 + m.ph)) * FP / dz - 17 * k; oy = Fy + HC * FP / dz + Math.round(Math.sin(t * 0.5 + m.ph)) ; iMutant(t * 0.5 + m.ph, m); }   // and the big ones, behind the hall
     k = kb; ox = Fx; oy = Fy; hall(t, kb);
     const wd = 52 + 7 * Math.sin(t * 0.07);
     const near = S.laps >= 4 ? 0.5 : 1;                                                                         // from lap four they close in
@@ -300,7 +302,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   // ---------------------------------------------------------------- the room: wall, blind, sill, lamp and the lettering
   function room(t, theta, endMode, p) {
     const fade = 1 - smooth(0, 0.1, p), par = reduce || touch ? 0 : (0.5 - S.ptrX) * fade;
-    const kr = 1 / (1 - z), { wx0, wx1, wy0, sillY, P, hx, hy, hw, hh } = L, ww = wx1 - wx0, B = 4000, WALL = '#241925';
+    const zo = S.laps >= BROKE ? 1 - 0.42 * smooth(0, 1, S.esc) : 1, kr = zo / (1 - z), { wx0, wx1, wy0, sillY, P, hx, hy, hw, hh } = L, ww = wx1 - wx0, B = 4000, WALL = '#241925';
     g = gr; g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, W, H);
     k = kr; ox = Fx - L.F0x * kr + Math.round(par * 3); oy = Fy - L.F0y * kr;
     R(-B, -B, 2 * B, B + wy0, WALL); R(-B, sillY, 2 * B, B, WALL); R(-B, wy0, B + wx0, sillY - wy0, WALL); R(wx1, wy0, B, sillY - wy0, WALL);
@@ -338,7 +340,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(bx + 22, sillY - 5, 6, 3, '#2a3035'); R1(bx + 23, sillY - 4, 1, 1, cy); R1(bx + 26, sillY - 4, 1, 1, cy); R(bx + 20, sillY - 4, 2, 1, '#22272c'); R(bx + 20, sillY - 4, 1, 4, '#22272c'); R(bx + 28, sillY - 4, 2, 1, '#22272c'); R(bx + 29, sillY - 4, 1, 4, '#22272c');
     R(px, sillY - 6, 8, 6, '#b5613c'); R(px - 1, sillY - 7, 10, 2, '#cf7a4d'); R(px + 3, sillY - 16, 2, 9, '#4f8a5b'); R(px, sillY - 12, 2, 5, '#3d6a4d'); R(px + 6, sillY - 14, 2, 7, '#3d6a4d'); R(px - 2, sillY - 10, 2, 3, '#4f8a5b'); R(px + 8, sillY - 11, 2, 4, '#4f8a5b');
     // the lamp sits nearer than the wall, so it is placed with its own scale; its light is banded, and breathes
-    const kf = z < 0.56 ? 0.6 / (0.6 - z) : 0, fox = Fx - L.F0x * kf + Math.round(par * 7), foy = Fy - L.F0y * kf;
+    const kf = z < 0.56 ? zo * 0.6 / (0.6 - z) : 0, fox = Fx - L.F0x * kf + Math.round(par * 7), foy = Fy - L.F0y * kf;
     const lsx = fox + L.lx * kf, lsy = foy + (L.lampTop + 5) * kf, lit = S.lamp * (1 - smooth(0.3, 0.55, z));
     const fl = 1 + 0.012 * Math.sin(t * 7.3) + 0.008 * Math.sin(t * 12.7 + 1), Rg = Math.max(W, H) * 0.6 * (kf || 1) * fl, tr = [ox, oy, k];
     ox = oy = 0; k = 1;
@@ -371,8 +373,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
       R(cx, cb, 13, 60, '#34525c'); R(cx, cb, 13, 1, '#4d7682'); R(cx, cb, 2, 60, '#3f626d');
     }
     if (broke) {                                                                                                                    // the first robot, grown enormous, right in front of you. Scrolling makes it lunge.
-      const u = clamp(scrollY / (0.4 * innerHeight), 0, 1), bw = (L.port ? W * 0.96 : Math.min(W * 0.64, H * 0.78)) * (1 + 0.9 * u * u), br = Math.sin(t * 1.3) > 0 ? 0 : 1;
-      k = bw / 60; ox = Math.round(W / 2 + Math.sin(t * 0.7) * 1.5); oy = Math.round(H * (L.port ? 0.34 : 0.27) - u * u * H * 0.1) + br;
+      const u = S.esc, bw = (L.port ? W * 0.96 : Math.min(W * 0.64, H * 0.78)) * (1 + 0.3 * u), br = Math.sin(t * 1.3) > 0 ? 0 : 1;
+      k = bw / 60; ox = Math.round(W / 2 + Math.sin(t * 0.7) * 1.5 + (u > 0.6 ? Math.sin(t * 47) * (u - 0.6) * 5 : 0)); oy = Math.round(H * (L.port ? 0.34 : 0.27) - u * H * 0.05) + br;   // it leans in and shakes as the bar fills
       const out = Math.min(27, ((W - bw) / 2 + bw * 0.06) / k), B = '#2a3035', D = '#1f2428', M = '#2f363c', HI = '#3d464e', SH = '#191d20', st = Math.sin(t * 1.3) > 0 ? 0 : 1.5;
       for (const sd of [-1, 1]) {                                                                                                   // rear legs, then the body, then the front legs, which run off the bottom of the screen
         const x0 = sd > 0 ? 30 : -30 - out * 0.55, lx = sd > 0 ? 30 + out * 0.55 - 7 : -30 - out * 0.55;
@@ -396,10 +398,12 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
         R(x0, 9 + s2, out, 9, M); R(x0, 9 + s2, out, 1.2, HI); R(x0, 17 + s2, out, 1, D); R(lx, 9 + s2, 9, 600, M); R(lx, 9 + s2, 1.2, 600, HI); R(lx + 7.5, 18 + s2, 1.5, 600, D);
         R(lx + 2, 11 + s2, 5, 5, D); R(lx + 3.5, 12.5 + s2, 2, 2, '#4a545e'); R(sd > 0 ? 30 : -32, 10.5 + s2, 2, 6, D);
       }
-      [ox, oy, k] = tr; g.globalAlpha = 1 - u;
-      L.tag.forEach((ln, i) => { const yy = L.yTag + i * 9; R(L.tagX - 2, yy - 1, ln.length * 6 + 3, 9, 'rgba(14,9,16,.72)'); txt(ln, L.tagX, yy, 1, '#ffe7ae', F5, 1); });
-      if (Math.sin(t * 5) > -0.3) { const ax = L.tagX + L.tag[L.tag.length - 1].length * 6 + 4, ay = L.yTag + (L.tag.length - 1) * 9 + 1 + (Math.sin(t * 5) > 0.4 ? 1 : 0); R(ax + 2, ay, 1, 4, '#ffe7ae'); R(ax, ay + 3, 5, 1, '#ffe7ae'); R(ax + 1, ay + 4, 3, 1, '#ffe7ae'); R(ax + 2, ay + 5, 1, 1, '#ffe7ae'); }
-      g.globalAlpha = 1;
+      ox = oy = 0; k = 1; g.globalAlpha = 1;                                                                                        // the line and the escape bar stay put on the glass of the screen
+      L.tag.forEach((ln, i) => { const yy = L.yTag + i * 9; R(L.tagX - 2, yy - 1, ln.length * 6 + 3, 9, 'rgba(14,9,16,.78)'); txt(ln, L.tagX, yy, 1, '#ffe7ae', F5, 1); });
+      const bx = L.tagX - 2, by = L.yHint - 1, bwd = Math.min(W - L.tagX - L.mx, 118), n = Math.floor((bwd - 4) / 4), on = Math.round(u * n);
+      R(bx, by, bwd, 9, 'rgba(14,9,16,.85)'); R(bx, by, bwd, 1, '#ffe7ae'); R(bx, by + 8, bwd, 1, '#ffe7ae'); R(bx, by, 1, 9, '#ffe7ae'); R(bx + bwd - 1, by, 1, 9, '#ffe7ae');
+      for (let i = 0; i < n; i++) R(bx + 2 + i * 4, by + 2, 3, 5, i < on ? (u > 0.85 && Math.sin(t * 20) > 0 ? '#eaffd0' : i > n * 0.66 ? '#2FC46E' : i > n * 0.33 ? '#e8c34a' : '#e0703a') : '#2a2028');
+      if (u < 0.03 && Math.sin(t * 5) > -0.3) { const ax = L.tagX + L.tag[L.tag.length - 1].length * 6 + 4, ay = L.yTag + (L.tag.length - 1) * 9 + 1 + (Math.sin(t * 5) > 0.4 ? 1 : 0); R(ax + 2, ay, 1, 4, '#ffe7ae'); R(ax, ay + 3, 5, 1, '#ffe7ae'); R(ax + 1, ay + 4, 3, 1, '#ffe7ae'); R(ax + 2, ay + 5, 1, 1, '#ffe7ae'); }
     }
     }
     g = gm; g.drawImage(rc, 0, 0);
@@ -416,7 +420,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   addEventListener('pointerup', () => { S.drag = null; });
   heroSection.addEventListener('click', e => { if (touch && scrollY < 40 && !e.target.closest('button,a')) manual(Math.abs(S.keep) < 0.5 ? CLOSED : 0.05); });
   btnOpen.addEventListener('click', () => { S.pg = 1; manual(0); });
-  const reset = () => { S.laps = 0; S.flash = 1; S.endManual = false; S.keep = S.target = S.theta = 0.72; layout(); place(); measure(); if (scrollY > 2) scrollTo({ top: 0, behavior: 'instant' }); };   // back to the first visit
+  const reset = stay => { S.laps = 0; S.esc = 0; S.flash = stay ? 0 : 1; S.endManual = false; S.keep = S.target = S.theta = 0.72; layout(); place(); measure(); if (!stay && scrollY > 2) scrollTo({ top: 0, behavior: 'instant' }); };   // back to the first visit
   btnClose.addEventListener('click', () => { S.pr = 1; if (S.laps >= BROKE) return reset(); manual(CLOSED); });
   btnLamp.addEventListener('click', () => { S.lampT = 1 - S.lampT; });
   ws.querySelectorAll('a').forEach(a => { const on = () => { S.hot = a.dataset.k; }, off = () => { if (S.hot === a.dataset.k) S.hot = null; }; a.addEventListener('pointerenter', on); a.addEventListener('focus', on); a.addEventListener('pointerleave', off); a.addEventListener('blur', off); });
@@ -446,8 +450,12 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const t = S.t, zn = zone();
     drawIcons(reduce ? 1 : t);
     if (zn === 'none') { S.zoneWas = zn; if (!buttons.hidden) buttons.hidden = true; if (!ws.hidden) ws.hidden = true; endUi.style.visibility = 'hidden'; return; }
-    if (zn === 'hero' && S.laps >= BROKE && scrollY > 0.4 * innerHeight) { reset(); return; }   // scroll to escape
-    const y = scrollY, p = zn === 'hero' ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
+    if (S.laps >= BROKE) {                                         // scroll to escape: the bar charges with the scroll, but never faster than you can watch
+      if (zn !== 'hero') { reset(true); return; }
+      const want = clamp(scrollY / (ESC * innerHeight), 0, 1); S.esc += clamp(want - S.esc, -dt * 3, dt / 1.1);
+      if (S.esc >= 0.999) { reset(); return; }
+    } else S.esc = 0;
+    const y = scrollY, p = zn === 'hero' && S.laps < BROKE ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
     // past the thank-you, the last screen of scroll opens the blind again; reaching the bottom goes round
     const gap = zn === 'end' ? document.documentElement.scrollHeight - innerHeight - y : 1e9, r = zn === 'end' && q >= 1 ? clamp(1 - gap / (OPEN * vh), 0, 1) : 0;
     if (zn === 'hero') S.target = S.keep;                          // what the motor is asked to do
