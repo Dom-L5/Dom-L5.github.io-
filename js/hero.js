@@ -38,13 +38,14 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, touch = matchMedia('(hover: none)').matches;
   const up = el => (el?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase();
   const words = { name: [...heroUi.querySelectorAll('h1 span')].map(up).join(' ') || up(heroUi.querySelector('h1')), line: up(heroUi.querySelector('.hero-line')), laps: (heroUi.querySelector('.hero-line').dataset.laps || '').split('|').map(x => x.trim().toUpperCase()).filter(Boolean), end: up(endUi.querySelector('h2')) };
+  const wsA = [...ws.querySelectorAll('a')];
   const LABEL = {}; ws.querySelectorAll('a').forEach(a => { LABEL[a.dataset.k] = (a.dataset.label || a.dataset.k).toUpperCase(); });
 
   let W = 320, H = 180, s = 4, L = {}, sky = null, stars = [];
   let ox = 0, oy = 0, k = 1;            // the current drawing transform: screen = o + world * k, then rounded to whole pixels
   let z = 0, Fx = 0, Fy = 0;            // camera: how far it has flown, and where the lit window sits on screen
   const BROKE = words.laps.length || 5;   // the lap on which a robot comes through the window
-  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, esc: 0, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
+  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, laps: 0, flash: 0, esc: 0, wsR: {}, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
 
   // ---------------------------------------------------------------- drawing primitives
   function R(x, y, w, h, c) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k), x1 = Math.round(ox + (x + w) * k), y1 = Math.round(oy + (y + h) * k); if (x1 <= x0 || y1 <= y0 || x1 < 0 || y1 < 0 || x0 > W || y0 > H) return; g.fillStyle = c; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
@@ -86,7 +87,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const port = W < H * 0.9, size = { blinds: [26, 42], pickypal: [36, 24], challenge: [14, 22], robot: [34, 15], next: [26, 18] }, it = {};
     const tiers = port ? [[Math.round(H * 0.36), ['next', 'challenge']], [Math.round(H * 0.55), ['pickypal']], [Math.round(H * 0.77), ['blinds', 'robot']]] : [[Math.round(H * 0.72), ['blinds', 'pickypal', 'challenge', 'robot', 'next']]];
     const printer = !port && W >= 300, x0 = port ? 12 : Math.round(W * (printer ? 0.19 : 0.06)), x1 = W - (port ? 12 : Math.round(W * 0.05));
-    for (const [y, keys] of tiers) keys.forEach((q, i) => { const [w, h] = size[q]; it[q] = { x: Math.round(x0 + (x1 - x0) * (i + 0.5) / keys.length - w / 2), y, w, h }; });
+    for (const [y, keys] of tiers) keys.forEach((q, i) => { const [w, h] = size[q]; it[q] = { x: Math.round(x0 + (x1 - x0) * (i + 0.5) / keys.length - w / 2), y, w, h, slot: (x1 - x0) / keys.length }; });
     return { port, tiers, it, printer, x0, x1, by: tiers[tiers.length - 1][0] };
   }
   function makeSky() {
@@ -209,13 +210,24 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     const fl = 1 + 0.01 * Math.sin(t * 6.1), Rw = Math.max(W, H) * fl;
     for (const [r, a] of [[0.85, 0.03], [0.7, 0.03], [0.56, 0.035], [0.44, 0.04], [0.33, 0.045], [0.23, 0.05], [0.14, 0.06], [0.07, 0.08]]) glow(lx, ly + 8, Rw * r, '255,160,84', a);
     glow(I.pickypal.x + 18, I.pickypal.y - 13, 15, '255,236,214', 0.06);
-    if (!full) return;
-    for (const q in I) {                                                                                                                                // labels and the highlight
-      const it = I[q], lab = LABEL[q] || q.toUpperCase(), w = tw(lab, 1, F5), x = Math.round(it.x + it.w / 2 - w / 2), y = it.y + (it.y === by ? 6 : 5), hot = S.hot === q;
+    if (full <= 0.01) return;
+    const wox = ox, woy = oy, wkk = k;                                                                                                                  // labels keep their size while the room grows, so they can be read (and tapped) early
+    for (const q in I) {
+      const it = I[q], lab = LABEL[q] || q.toUpperCase(), w = tw(lab, 1, F5), hot = S.hot === q;
+      const sx = wox + it.x * wkk, sy = woy + (it.y - it.h) * wkk, sw = it.w * wkk, sh = it.h * wkk;
+      const sl = it.slot * wkk, cx = sx + sw / 2, lo = Math.max(2, cx - sl / 2 + 1), hi = Math.min(Math.max(2, W - w - 4), cx + sl / 2 - w - 1);   // a label never strays into its neighbour's slot
+      const x = Math.round(clamp(sx + sw / 2 - w / 2, Math.min(lo, hi), Math.max(lo, hi))), y = Math.round(clamp(sy + sh + 4, 2, H - 12));
+      ox = oy = 0; k = 1; g.globalAlpha = full;
       R(x - 2, y, w + 4, 9, hot ? '#25B862' : '#f1e3c6'); txt(lab, x, y + 1, 1, hot ? '#08240f' : '#3a2530', F5, 1);
-      if (hot) { const x0 = it.x - 3, y0 = it.y - it.h - 3, x1 = it.x + it.w + 3, c = '#ffe9c2'; R(x0, y0, 4, 1, c); R(x0, y0, 1, 4, c); R(x1 - 4, y0, 4, 1, c); R(x1 - 1, y0, 1, 4, c); }
+      if (hot) { const x0 = Math.round(sx) - 3, y0 = Math.round(sy) - 3, x1 = Math.round(sx + sw) + 3, c = '#ffe9c2'; R(x0, y0, 4, 1, c); R(x0, y0, 1, 4, c); R(x1 - 4, y0, 4, 1, c); R(x1 - 1, y0, 1, 4, c); }
+      g.globalAlpha = 1; ox = wox; oy = woy; k = wkk;
+      S.wsR[q] = { lx: x - 2, lw: w + 4, ly: y, sx, sy, sw, slot: sl };
     }
-    balance(touch ? 'TAP A PROJECT OR KEEP SCROLLING' : 'PICK A PROJECT OR KEEP SCROLLING', Math.floor((W - 12) / 6)).forEach((ln, i) => txt(ln, Math.round((W - tw(ln, 1, F5)) / 2), by + 26 + i * 9, 1, '#9a7c6e', F5, 1));
+    g.globalAlpha = full;
+    const hy = Math.round(clamp(woy + (by + 26) * wkk, 12, H - 20)); ox = oy = 0; k = 1;
+    balance(touch ? 'TAP A PROJECT OR KEEP SCROLLING' : 'PICK A PROJECT OR KEEP SCROLLING', Math.floor((W - 12) / 6)).forEach((ln, i) => txt(ln, Math.round((W - tw(ln, 1, F5)) / 2), hy + i * 9, 1, '#9a7c6e', F5, 1));
+    ox = wox; oy = woy; k = wkk;
+    g.globalAlpha = 1;
   }
 
   // The same sprites again, further down the page: each project section opens with its own, under a wall lamp.
@@ -432,7 +444,6 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   function place() {
     const at = (el, x, y) => { el.style.left = x * s + 'px'; el.style.top = y * s + 'px'; };
     at(btnOpen, L.gx, L.gy); at(btnClose, L.rx, L.ry); at(btnLamp, L.lx, L.lampTop + 9);
-    ws.querySelectorAll('a').forEach(a => { const it = L.ws.it[a.dataset.k]; if (!it) return; at(a, it.x - 3, it.y - it.h - 3); a.style.width = (it.w + 6) * s + 'px'; a.style.height = (it.h + 16) * s + 'px'; });
     endUi.style.setProperty('--ex', L.tagX * s + 'px'); endUi.style.setProperty('--ey', L.yTag * s + 'px');
   }
   function resize() { const w = innerWidth, h = innerHeight; if (w === lw && Math.abs(h - lh) < 90) return; lw = w; lh = h; layout(); place(); measure(); }
@@ -473,19 +484,29 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     S.theta += clamp(err * 6.5, -rate, rate) * dt;                 // a geared motor: rate-limited, with a soft landing
     S.led += ((Math.abs(err) > 0.03 && !S.drag && (zn === 'hero' || S.endManual) ? 1 : 0) - S.led) * Math.min(1, dt * 10);
     S.pg = Math.max(0, S.pg - dt * 4); S.pr = Math.max(0, S.pr - dt * 4); S.lamp += (S.lampT - S.lamp) * Math.min(1, dt * 7);
-    const pc = Math.min(1, p / 0.8);                                // the flight ends at 80% of the scroll; the rest is time in the workshop
+    const pc = Math.min(1, p / 0.72);                                // the flight ends at 72% of the scroll; the rest is time in the workshop
     const theta = mix(S.theta, 0, smooth(0, 0.1, pc));              // scrolling opens the slats, whatever the motor is doing
     camera(pc);
 
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
     const kb = DB / (DB - z), inside = 1.8 * kb > Math.max(Fx, W - Fx) + 1 && 2.7 * kb > Math.max(Fy, H - Fy) + 1;
-    if (inside) { const wk = (DWS - ZEND) / (DWS - z); k = wk; ox = Fx - W / 2 * wk; oy = Fy - H / 2 * wk; workshop(t, wk > 0.985); }
+    let wsF = 0;
+    if (inside) { const wk = (DWS - ZEND) / (DWS - z); k = wk; ox = Fx - W / 2 * wk; oy = Fy - H / 2 * wk; wsF = smooth(0.62, 0.86, wk); workshop(t, wsF); }
     else campus(t, kb);
     if (z < 0.975) room(t, theta, zn === 'end', pc);
     if (S.flash > 0.01) { g.globalAlpha = S.flash * S.flash; g.fillStyle = '#ffe2a0'; g.fillRect(0, 0, W, H); g.globalAlpha = 1; S.flash = Math.max(0, S.flash - dt * 1.6); }
 
     const showB = (zn === 'hero' && p < 0.03) || (zn === 'end' && q > 0.9); if (buttons.hidden === showB) buttons.hidden = !showB;
-    const showW = zn === 'hero' && pc > 0.955; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
+    const showW = zn === 'hero' && wsF > 0.12; if (ws.hidden === showW) { ws.hidden = !showW; if (!showW) S.hot = null; }
+    if (showW) for (const a of wsA) {                                                                                                                   // a generous tap target: the sprite, its label and some room around both
+      const r = S.wsR[a.dataset.k]; if (!r) continue;
+      const padX = L.ws.port ? 13 : 8, cx = r.sx + r.sw / 2;
+      let x0 = Math.min(r.lx, r.sx) - padX, x1 = Math.max(r.lx + r.lw, r.sx + r.sw) + padX;
+      if (x1 - x0 > r.slot) { x0 = cx - r.slot / 2; x1 = cx + r.slot / 2; }
+      const y0 = Math.min(r.sy, r.ly) - 6, y1 = r.ly + 9 + (L.ws.port ? 11 : 5);
+      a.style.left = (x0 * s).toFixed(1) + 'px'; a.style.top = (y0 * s).toFixed(1) + 'px';
+      a.style.width = ((x1 - x0) * s).toFixed(1) + 'px'; a.style.height = ((y1 - y0) * s).toFixed(1) + 'px';
+    }
     if (zn === 'end') { endUi.style.visibility = 'visible'; endUi.style.opacity = (smooth(0.5, 0.92, q) * (1 - smooth(0, 0.35, r))).toFixed(2); endUi.style.pointerEvents = q > 0.6 && r < 0.3 ? 'auto' : 'none'; }
     else endUi.style.visibility = 'hidden';
   }
