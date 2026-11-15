@@ -179,11 +179,20 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(x, y - 11, 8, 11, '#39414a'); R(x, y - 11, 8, 1, '#4a545c'); R(x + 1, y - 9, 6, 3, '#bfe8d2');
     for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) R(x + 1 + c * 2.5, y - 5 + r * 1.6, 1, 1, r === 2 && c === 2 ? '#e08a2e' : '#d8d2c4');
   }
-  function iSolder(x, y, t) {                                                                                                                         // station, stand, a hot iron and its smoke
-    R(x, y - 7, 9, 7, '#2c3338'); R(x, y - 7, 9, 1, '#3f484f'); R(x + 1, y - 5, 4, 2, '#59d08a'); R(x + 6, y - 5, 2, 2, '#d8d2c4'); R(x + 6, y - 2, 1, 1, Math.sin(t * 3) > -0.6 ? '#ff7a2a' : '#7a3a1e');
-    R(x + 9, y - 1, 3, 1, '#1d1318'); R(x + 11, y - 1, 8, 1, '#59636a'); R(x + 14, y - 5, 1, 4, '#8d979c'); R(x + 13, y - 6, 3, 1, '#8d979c');
-    R(x + 16, y - 4, 2, 3, '#2d5b88'); R(x + 15, y - 6, 2, 2, '#356a9c'); R(x + 14, y - 8, 1, 2, '#b9c2c7'); R(x + 13, y - 9, 1, 1, '#b9c2c7'); R(x + 12, y - 10, 1, 1, '#ffb347');
-    for (let i = 0; i < 5; i++) { const ph = (t * 0.32 + i / 5) % 1; g.globalAlpha = 0.5 * (1 - ph) * Math.min(1, ph * 6); R1(x + 12 + Math.sin(ph * 5 + i * 1.7) * (0.6 + ph * 2.2), y - 11.5 - ph * 16, ph > 0.45 ? 2 : 1, 1, '#e9dcc8'); }
+  function iSolder(x, y, t, lite) {   // lite: no station, for tight spots (stand and iron only, 17 wide from x + 13)                                                                                                                         // station, coiled stand, a hot iron and its smoke (about 30 wide)
+    if (!lite) {
+    R(x, y - 11, 12, 11, '#2c3338'); R(x, y - 11, 12, 1, '#454f57'); R(x + 1, y - 9, 7, 4, '#13181b'); R(x + 2, y - 8, 5, 2, '#ff9b3d');          // station with a temperature readout
+    disc(x + 9.5, y - 3.5, 1.8, '#c2332b'); R1(x + 9, y - 5, 1, 1, '#ff8a7a'); R(x + 2, y - 3, 1, 1, Math.sin(t * 3) > -0.6 ? '#59d08a' : '#1f4a2e');
+    R(x + 12, y - 4, 2, 1, '#1d1318'); R(x + 13, y - 6, 1, 2, '#1d1318'); R(x + 14, y - 7, 3, 1, '#1d1318');                                          // cable over to the stand
+    }
+    R(x + 13, y - 2, 15, 2, '#59636a'); R(x + 13, y - 2, 15, 1, '#7d878c'); R(x + 14, y - 4, 5, 2, '#e3c04a'); R(x + 14, y - 4, 5, 1, '#f2d76a');  // base and sponge
+    const st = (i, w, c) => R(x + 20 + i, y - 4 - i, w, w, c);
+    for (let i = 0; i < 4; i++) st(i, 2, '#b9c2c7');                                                                                                  // tip and shaft, down in the coil
+    for (let i = 4; i < 9; i++) st(i - 0.5, 3, i === 4 ? '#e08a2e' : '#2d5b88');                                                                      // grip
+    for (let i = 9; i < 12; i++) st(i - 0.5, 2.5, '#22282c');                                                                                         // handle end
+    for (let i = 0; i < 4; i++) R(x + 19 + i, y - 4 - i, 4, 1, '#8d979c');                                                                            // the coil around the shaft
+    R(x + 18, y - 3, 2, 1, '#ffb347'); R1(x + 18, y - 3, 1, 1, '#fff1c9');                                                                            // hot tip
+    for (let i = 0; i < 6; i++) { const ph = (t * 0.3 + i / 6) % 1; g.globalAlpha = 0.55 * (1 - ph) * Math.min(1, ph * 6); R1(x + 18 + Math.sin(ph * 5 + i * 1.7) * (0.8 + ph * 3), y - 4.5 - ph * 22, ph > 0.4 ? 2 : 1, ph > 0.6 ? 2 : 1, '#e9dcc8'); }
     g.globalAlpha = 1;
   }
   function sheet(x, y, w, h) { R(x, y, w, h, '#2d5b88'); R(x + 1, y + 1, w - 2, h - 2, '#356a9c'); R(x + (w >> 1) - 1, y - 1, 2, 2, '#c2332b'); }
@@ -200,15 +209,20 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(tx + 2, ty + 3, 2, 13, '#5b3a29'); R(tx, ty, 7, 4, '#9aa3a8'); R(tx + 13, ty + 2, 2, 14, '#b9c2c7'); R(tx + 12, ty, 4, 3, '#b9c2c7'); R(tx + 13, ty, 2, 1, '#a47a52');
     R(tx + 22, ty, 3, 7, '#c2332b'); R(tx + 23, ty + 7, 1, 9, '#b9c2c7'); R(tx + 31, ty, 1, 8, '#b9c2c7'); R(tx + 33, ty, 1, 8, '#b9c2c7'); R(tx + 30, ty + 8, 2, 7, '#2f6f73'); R(tx + 33, ty + 8, 2, 7, '#2f6f73');
     disc(tx + 46, ty + 6, 4, '#d9a441'); disc(tx + 46, ty + 6, 1.6, '#a47a52'); R(tx + 56, ty, 2, 16, '#d8d2c4');
-    const pl = (px, py) => { R(px + 1, py, 2, 6, '#8d979c'); R(px, py + 6, 1, 8, '#c2332b'); R(px + 3, py + 6, 1, 8, '#c2332b'); };            // pliers
-    if (Q.port && pg[2] > 96) { pl(tx + 68, ty); disc(tx + 84, ty + 6, 4, '#3a4248'); disc(tx + 84, ty + 6, 1.6, '#a47a52'); }
+    const MH = '#5d666b', ML = '#9aa3a8', pr = (px, py, w) => { R(px - 1, py, 1, 3, MH); R(px + w, py, 1, 3, MH); R(px - 1, py, 1, 1, ML); R(px + w, py, 1, 1, ML); },   // two-prong peg
+      hk = (px, py) => { R(px, py, 1, 2, MH); R(px, py, 2, 1, ML); }, pin = (px, py) => { R(px - 0.5, py - 0.5, 2, 2, MH); R(px - 0.5, py - 0.5, 1, 1, ML); };
+    const bar = (px, py, w) => { R(px, py, w, 1, MH); R(px, py, w, 0.5, ML); R(px, py + 1, 1, 2, MH); R(px + w - 1, py + 1, 1, 2, MH); };
+    pr(tx + 2, ty + 4, 2); pr(tx + 13, ty + 3, 2); pr(tx + 23, ty + 7, 1); bar(tx + 29, ty + 7, 8); pin(tx + 46, ty + 6); hk(tx + 56, ty - 1);       // holders for the top row
+    const pl = (px, py) => { R(px + 1, py, 2, 6, '#8d979c'); R(px, py + 6, 1, 8, '#c2332b'); R(px + 3, py + 6, 1, 8, '#c2332b'); pr(px + 1, py + 3, 2); };   // pliers, on their peg
+    if (Q.port && pg[2] > 96) { pl(tx + 68, ty); disc(tx + 84, ty + 6, 4, '#3a4248'); pin(tx + 84, ty + 6); }
     if (!Q.port && pg[3] >= 44 && pg[2] >= 74) {                                                                                                        // a second row: saw, pliers, calipers, tape, hex keys
       const ry = ty + 23;
       R(tx, ry + 2, 14, 4, '#b9c2c7'); for (let i = 0; i < 7; i++) R(tx + i * 2, ry + 6, 1, 1, '#8d979c'); R(tx + 14, ry, 5, 8, '#5b3a29'); R(tx + 16, ry + 3, 1, 2, '#a47a52');
       pl(tx + 26, ry);
       R(tx + 37, ry, 1, 14, '#d8d2c4'); R(tx + 37, ry, 5, 1, '#d8d2c4'); R(tx + 37, ry + 5, 4, 1, '#d8d2c4'); R(tx + 36, ry + 4, 3, 3, '#9aa3a8');
-      disc(tx + 50, ry + 6, 4, '#3a4248'); disc(tx + 50, ry + 6, 1.6, '#a47a52');
+      disc(tx + 50, ry + 6, 4, '#3a4248'); pin(tx + 50, ry + 6);
       R(tx + 60, ry, 1, 12, '#22282c'); R(tx + 60, ry + 12, 4, 1, '#22282c'); R(tx + 64, ry + 3, 1, 8, '#22282c'); R(tx + 64, ry + 11, 3, 1, '#22282c');
+      hk(tx + 3, ry); hk(tx + 10, ry); hk(tx + 38, ry - 1); bar(tx + 58, ry + 2, 9);
     }
     const bp = Q.port ? [W - 46, Math.round(H * 0.6)] : [Math.round(W * 0.72), Math.round(H * 0.22)];                                                  // the robot drawing, pinned up
     R(bp[0], bp[1], 32, 22, '#2d5b88'); R(bp[0] + 1, bp[1] + 1, 30, 20, '#356a9c'); const bl = '#cfe3f5';
@@ -233,14 +247,14 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     Q.tiers.forEach(([y], i) => { if (i < Q.tiers.length - 1) { R(Q.x0 - 6, y, Q.x1 - Q.x0 + 12, 3, '#a9743f'); R(Q.x0 - 6, y, Q.x1 - Q.x0 + 12, 1, '#c79457'); R(Q.x0 + 2, y + 3, 2, 6, '#7a4e32'); R(Q.x1 - 4, y + 3, 2, 6, '#7a4e32'); } });
     R(-B, by, 2 * B, 4, '#b07a48'); R(-B, by, 2 * B, 1, '#d29c60'); R(-B, by + 4, 2 * B, 12, '#7a4e32'); R(-B, by + 16, 2 * B, 2, '#33202a'); R(-B, by + 18, 2 * B, B, '#2b1b23');   // the bench
     R(Q.x0 - 4, by + 16, 4, B, '#5f3d2c'); R(Q.x1, by + 16, 4, B, '#5f3d2c');
-    if (Q.printer) iPrinter(14, by, t);
+    const pX = 4; if (Q.printer) iPrinter(pX, by, t);
     iBlinds(I.blinds.x, I.blinds.y, t); iLaptop(I.pickypal.x, I.pickypal.y, t); iPhone(I.challenge.x, I.challenge.y, t); iRobot(I.robot.x, I.robot.y, t); iNext(I.next.x, I.next.y);
     R(I.pickypal.x + 39, I.pickypal.y - 6, 5, 6, '#f1e3c6'); R(I.pickypal.x + 44, I.pickypal.y - 5, 1, 3, '#f1e3c6');                                    // a mug by the laptop
-    if (Q.port) { const py = I.pickypal.y; if (I.pickypal.x - Q.x0 >= 26) iSolder(Q.x0 + 4, py, t); if (Q.x1 - (I.pickypal.x + 46) >= 12) iCalc(Q.x1 - 12, py); }   // on a phone, only the shelf with room gets them
+    if (Q.port) { const py = I.pickypal.y; if (I.pickypal.x - Q.x0 >= 36) iSolder(Q.x0 + 3, py, t); else if (I.pickypal.x - Q.x0 >= 21) iSolder(Q.x0 - 11, py, t, true); if (Q.x1 - (I.pickypal.x + 46) >= 12) iCalc(Q.x1 - 12, py); }   // on a phone, only the shelf with room gets them
     else {
       const g1 = I.pickypal.x - (I.blinds.x + 26), g2 = I.robot.x - (I.challenge.x + 14);
       if (g1 >= 12) iCalc(I.blinds.x + 26 + Math.round((g1 - 8) / 2), by);
-      if (g2 >= 21) iSolder(I.challenge.x + 14 + Math.round((g2 - 18) / 2), by, t);
+      if (Q.printer) { if (I.blinds.x >= 67) iSolder(36, by, t); else iSolder(22, by, t, true); } else if (g2 >= 21) iSolder(I.challenge.x + 1 + Math.round((g2 - 17) / 2), by, t, true);
     }
     const fl = 1 + 0.01 * Math.sin(t * 6.1), Rw = Math.max(W, H) * fl;
     for (const [r, a] of [[0.85, 0.03], [0.7, 0.03], [0.56, 0.035], [0.44, 0.04], [0.33, 0.045], [0.23, 0.05], [0.14, 0.06], [0.07, 0.08]]) glow(lx, ly + 8, Rw * r, '255,160,84', a);
