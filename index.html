@@ -224,7 +224,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 /* ---------- the end (the blind closes) ---------- */
 .end { position: relative; height: 100vh; height: 100svh; }
 .gl .end { position: static; height: 100lvh; pointer-events: none; }
-.gl.px .end { height: 250lvh; }   /* one screen to close the blind, half a screen to read, one screen to open it again and go round */
+.gl.px .end { height: 250lvh; }
+@media (hover: none) { .gl.px .end { height: 150lvh; } }   /* touch: no scroll-to-open, so no extra screen. The buttons loop it. */   /* one screen to close the blind, half a screen to read, one screen to open it again and go round */
 .end-ui {
   position: absolute; left: 0; bottom: 0; width: 100%; height: 100vh; height: 100svh;
   padding: 0 var(--gutter) clamp(24px, 5vh, 56px); display: flex; flex-direction: column; justify-content: flex-end;
@@ -663,7 +664,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
       <li><a href="assets/Domenic-Landriscina-Resume.pdf" download="Domenic-Landriscina-Resume.pdf">Resume (PDF)</a></li>
       <li><a href="#top">Back to the top</a></li>
     </ul>
-    <p class="note">I wonder what would happen if you scrolled through again.</p>
+    <p class="note">I wonder what would happen if you clicked the buttons and looked through again.</p>
     <p class="note">Domenic Landriscina, 2026.</p>
   </div>
 </footer>

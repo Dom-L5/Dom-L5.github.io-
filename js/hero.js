@@ -494,6 +494,10 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   function place() {
     const at = (el, x, y) => { el.style.left = x * s + 'px'; el.style.top = y * s + 'px'; };
     at(btnOpen, L.gx, L.gy); at(btnClose, L.rx, L.ry); at(btnLamp, L.lx, L.lampTop + 9);
+    if (touch) {                                                   // fat-finger zones: as wide or tall as the neighbouring button allows
+      const dx = Math.abs(L.rx - L.gx) * s, dy = Math.abs(L.ry - L.gy) * s, w = dx > 4 ? Math.max(44, dx - 2) : 104, h = dx > 4 ? 76 : Math.max(40, dy - 2);
+      for (const b of [btnOpen, btnClose]) { b.style.width = w + 'px'; b.style.height = h + 'px'; b.style.margin = -h / 2 + 'px 0 0 ' + -w / 2 + 'px'; b.style.borderRadius = '14px'; }
+    }
     endUi.style.setProperty('--ex', L.tagX * s + 'px'); endUi.style.setProperty('--ey', L.yTag * s + 'px');
   }
   function resize() { const w = innerWidth, h = innerHeight; if (w === lw && Math.abs(h - lh) < 90) return; lw = w; lh = h; layout(); place(); measure(); }
@@ -518,13 +522,13 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     } else S.esc = 0;
     const y = scrollY, p = zn === 'hero' && S.laps < BROKE ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
     // past the thank-you, the last screen of scroll opens the blind again; reaching the bottom goes round
-    const gap = zn === 'end' ? document.documentElement.scrollHeight - innerHeight - y : 1e9, r = zn === 'end' && q >= 1 ? clamp(1 - gap / (OPEN * vh), 0, 1) : 0;
+    const gap = zn === 'end' ? document.documentElement.scrollHeight - innerHeight - y : 1e9, r = zn === 'end' && q >= 1 && !touch ? clamp(1 - gap / (OPEN * vh), 0, 1) : 0;   // touch: the buttons open it, not the scroll
     if (zn === 'hero') S.target = S.keep;                          // what the motor is asked to do
     else {
       if (S.zoneWas !== 'end') S.endManual = false;
       if (!S.endManual) S.target = r > 0 ? mix(CLOSED, 0, smooth(0, 0.8, r)) : mix(0.02, CLOSED, smooth(0.25, 0.92, q));
     }
-    if (zn === 'end' && S.theta < 0.15 && ((S.endManual && S.target < 0.1) || (!S.endManual && OPEN && gap < 6))) {   // opened again at the end: round we go, back to the top with the blind open
+    if (zn === 'end' && S.theta < 0.15 && ((S.endManual && S.target < 0.1) || (!S.endManual && OPEN && !touch && gap < 6))) {   // opened again at the end: round we go, back to the top with the blind open
       S.laps = Math.min(BROKE, S.laps + 1); S.keep = S.target = 0; S.endManual = false; S.flash = 1; scrollTo({ top: 0, behavior: 'instant' });
       layout(); place(); measure();
       S.zoneWas = 'hero'; return;
