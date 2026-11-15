@@ -43,7 +43,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   let W = 320, H = 180, s = 4, L = {}, sky = null, stars = [];
   let ox = 0, oy = 0, k = 1;            // the current drawing transform: screen = o + world * k, then rounded to whole pixels
   let z = 0, Fx = 0, Fy = 0;            // camera: how far it has flown, and where the lit window sits on screen
-  const S = { t: 0, theta: CLOSED, target: CLOSED, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
+  const S = { t: 0, theta: 0.72, target: 0.72, keep: 0.72, drag: null, ptrX: 0.5, ptrY: 0.5, lastInput: -10, mode: null, manualUntil: -1, endManual: false, led: 0, pg: 0, pr: 0, lamp: 1, lampT: 1, hot: null, zoneWas: null, lock: null };
 
   // ---------------------------------------------------------------- drawing primitives
   function R(x, y, w, h, c) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k), x1 = Math.round(ox + (x + w) * k), y1 = Math.round(oy + (y + h) * k); if (x1 <= x0 || y1 <= y0 || x1 < 0 || y1 < 0 || x0 > W || y0 > H) return; g.fillStyle = c; g.fillRect(x0, y0, x1 - x0, y1 - y0); }
@@ -324,14 +324,17 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   }
 
   // ---------------------------------------------------------------- input
-  const manual = (target, e) => { S.mode = 'manual'; S.target = target; S.lastInput = S.t; S.manualUntil = S.t + 9; S.endManual = true; S.lock = e && e.clientX ? [e.clientX, e.clientY] : null; };
+  // The blind starts a little open and then stays wherever it was last left: by the buttons, by dragging on it, or by a tap on a phone.
+  const manual = target => { S.mode = 'manual'; S.target = target; if (S.zoneWas !== 'end') S.keep = target; else S.endManual = true; };
   addEventListener('pointermove', e => {
     if (e.pointerType === 'touch') return; S.ptrX = e.clientX / innerWidth; S.ptrY = e.clientY / innerHeight;
-    if (S.lock && Math.hypot(e.clientX - S.lock[0], e.clientY - S.lock[1]) < 90) return; S.lock = null; S.lastInput = S.t; S.mode = 'pointer';
+    if (S.drag) { S.keep = clamp(S.drag[1] + (e.clientY - S.drag[0]) / (innerHeight * 0.3), -CLOSED, CLOSED); S.mode = 'manual'; }
   }, { passive: true });
-  heroSection.addEventListener('click', e => { if (touch && scrollY < 40 && !e.target.closest('button,a')) manual(Math.abs(S.target) < 0.5 ? CLOSED : 0.05); });
-  btnOpen.addEventListener('click', e => { S.pg = 1; manual(0, e); });
-  btnClose.addEventListener('click', e => { S.pr = 1; manual(CLOSED, e); });
+  heroSection.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch' && scrollY < 40 && !e.target.closest('button,a')) S.drag = [e.clientY, S.keep]; });
+  addEventListener('pointerup', () => { S.drag = null; });
+  heroSection.addEventListener('click', e => { if (touch && scrollY < 40 && !e.target.closest('button,a')) manual(Math.abs(S.keep) < 0.5 ? CLOSED : 0.05); });
+  btnOpen.addEventListener('click', () => { S.pg = 1; manual(0); });
+  btnClose.addEventListener('click', () => { S.pr = 1; manual(CLOSED); });
   btnLamp.addEventListener('click', () => { S.lampT = 1 - S.lampT; });
   ws.querySelectorAll('a').forEach(a => { const on = () => { S.hot = a.dataset.k; }, off = () => { if (S.hot === a.dataset.k) S.hot = null; }; a.addEventListener('pointerenter', on); a.addEventListener('focus', on); a.addEventListener('pointerleave', off); a.addEventListener('blur', off); });
 
@@ -361,20 +364,15 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     drawIcons(reduce ? 1 : t);
     if (zn === 'none') { S.zoneWas = zn; if (!buttons.hidden) buttons.hidden = true; if (!ws.hidden) ws.hidden = true; endUi.style.visibility = 'hidden'; return; }
     const y = scrollY, p = zn === 'hero' ? clamp(y / heroLen, 0, 1) : 0, q = zn === 'end' ? clamp((y + vh - endTop) / vh, 0, 1) : 0;
-    if (zn === 'hero') {                                           // what the motor is asked to do
-      if (S.zoneWas === 'end') S.endManual = false;
-      if (reduce) S.target = 0.5;
-      else if (S.mode === 'manual' && t < S.manualUntil) { /* hold what the button asked for */ }
-      else if (S.mode === 'pointer' && t - S.lastInput < 5) S.target = (S.ptrY - 0.5) * 2 * CLOSED * 1.06;
-      else { S.mode = null; S.target = mix(0.3, 1.2, 0.5 + 0.5 * Math.cos(t * 0.45)); }
-    } else {
-      if (S.zoneWas !== 'end') { S.endManual = false; S.mode = null; }
+    if (zn === 'hero') S.target = S.keep;                          // what the motor is asked to do
+    else {
+      if (S.zoneWas !== 'end') S.endManual = false;
       if (!S.endManual) S.target = mix(0.02, CLOSED, smooth(0.25, 0.92, q));
     }
     S.zoneWas = zn;
-    const err = clamp(S.target, -CLOSED, CLOSED) - S.theta, rate = zn === 'end' && !S.endManual ? 9 : S.mode === null ? 0.5 : 2.1;
+    const err = clamp(S.target, -CLOSED, CLOSED) - S.theta, rate = zn === 'end' && !S.endManual ? 9 : 2.1;
     S.theta += clamp(err * 6.5, -rate, rate) * dt;                 // a geared motor: rate-limited, with a soft landing
-    S.led += ((Math.abs(err) > 0.03 && S.mode === 'manual' ? 1 : 0) - S.led) * Math.min(1, dt * 10);
+    S.led += ((Math.abs(err) > 0.03 && !S.drag && (zn === 'hero' || S.endManual) ? 1 : 0) - S.led) * Math.min(1, dt * 10);
     S.pg = Math.max(0, S.pg - dt * 4); S.pr = Math.max(0, S.pr - dt * 4); S.lamp += (S.lampT - S.lamp) * Math.min(1, dt * 7);
     const pc = Math.min(1, p / 0.8);                                // the flight ends at 80% of the scroll; the rest is time in the workshop
     const theta = mix(S.theta, 0, smooth(0, 0.1, pc));              // scrolling opens the slats, whatever the motor is doing
