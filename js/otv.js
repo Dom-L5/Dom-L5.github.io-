@@ -1,7 +1,7 @@
 // The ENES 100 rover (team H2GO's water-sampling OTV), assembled from the team's real CAD parts.
 // Scene units are millimetres: x forward, y up from the ground, z across. The wiring follows Dom's circuit diagram.
 import * as THREE from 'three';
-import { makeStage, blobShadow, unpack, cadMesh } from './tech.js?v=20261116';
+import { makeStage, blobShadow, unpack, cadMesh } from './tech.js?v=20261116b';
 
 const COLORS = {
   chassis: 0x2d4a6b, shield: 0x6b4bb0, post: 0x1c1f22, marker: 0xf2efe6, drive: 0x23282c, motor: 0xb9c2c7, wheel: 0x17191c, power: 0x23282c, battery: 0x2f7d4f, switch: 0x8f1f1f,
@@ -57,11 +57,11 @@ function buildWiring(mats) {
   };
   const up = (p, h) => [p[0], p[1], p[2] + h];
   // pins. Mega: digital header on the right-hand edge, analog and power header on the left; USB end toward the front.
-  const Z = 23.5, D = k => [146.47 - (k < 8 ? 62.23 - 2.54 * k : 40.6 - 2.54 * (k - 8)), 55.8, Z], An = k => [146.47 - (k < 8 ? 50.8 + 2.54 * k : 73.66 + 2.54 * (k - 8)), 104.06, Z];
+  const Z = 15.5, D = k => [146.47 - (k < 8 ? 62.23 - 2.54 * k : 40.6 - 2.54 * (k - 8)), 55.8, Z], An = k => [146.47 - (k < 8 ? 50.8 + 2.54 * k : 73.66 + 2.54 * (k - 8)), 104.06, Z];
   const V5 = [108.4, 104.06, Z], GND = [105.8, 104.06, Z], GND2 = [103.3, 104.06, Z], VIN = [100.75, 104.06, Z];
   // H-bridge 1 drives the wheels, H-bridge 2 the rack motor and the lights. Screw terminals and header, from the L298N layout.
-  const h1 = { v12: [159, 10, 18], gnd: [164, 10, 18], in: i => [179 + 2.54 * i, 10, 19], a: i => [152, 23 + 5 * i, 18], b: i => [190, 23 + 5 * i, 18] };
-  const h2 = { vin: [183, 150, 18], gnd: [178, 150, 18], in: i => [163 - 2.54 * i, 150, 19], a: i => [190, 137 - 5 * i, 18], b: i => [152, 137 - 5 * i, 18] };
+  const h1 = { v12: [183, 51, 14], gnd: [178, 51, 14], in: i => [163 - 2.54 * i, 51, 15], a: i => [190, 38 - 5 * i, 14], b: i => [152, 38 - 5 * i, 14] };
+  const h2 = { vin: [159, 109, 14], gnd: [164, 109, 14], in: i => [179 + 2.54 * i, 109, 15], a: i => [152, 122 + 5 * i, 14], b: i => [190, 122 + 5 * i, 14] };
   const batP = [30, 72, 61.5], batN = [30, 88, 61.5], sw = [25, 25, 71.5], HOLE = [187.5, 80, 88];
   // power: battery -> kill switch -> drive H-bridge, Mega VIN and the buck converter; the buck feeds H-bridge 2 with 5 V
   wire('r', [batP, [30, 50, 74], [27, 32, 73], sw], 1.1);
@@ -84,7 +84,7 @@ function buildWiring(mats) {
   wire('w', [An(1), up(An(1), 8), [124, 96, 50], [180, 83, 78], HOLE, [230, 99, 100], [262, 103, 100], [276, 104, 91], [276, 102, 88]]);
   // sensors: two ultrasonics (5 V, ground, trigger, echo) and three limit switches (signal and ground)
   [[V5, 'r'], [An(11), 'y'], [An(10), 'g'], [GND, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 9), [152, 94, 46], [200, 83, 72], [221, 77.6 + i * 2.54, 79]]));
-  [[V5, 'r'], [An(12), 'b'], [An(13), 'w'], [GND, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 6), [128, 62, 34], [160, 6, 16], [204, -4, 9], [236, -5, 6], [240, 12, 5], [240, 22.2 + i * 2.54, 4]]));
+  [[V5, 'r'], [An(12), 'b'], [An(13), 'w'], [GND, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 6), [128, 74, 24], [150, 76 + i * 2.5, 12], [176, 76 + i * 2.5, 6], [186, 76 + i * 2.5, -3], [190, 76 + i * 2.54, -14], [193.5, 76 + i * 2.54, -18]]));
   [[An(0), 'p'], [GND2, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 7), [150, 98, 31], [186, 84, 14], [198, 78.5 + i * 3, 9]]));
   [[An(15), 'y'], [GND2, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 10), [120, 94, 52], [180, 81, 78], HOLE, [226, 86, 99], [286, 97, 101], [303 + i * 9, 91, 105]]));
   [[An(14), 'g'], [GND2, 'k']].forEach(([p, c], i) => wire(c, [p, up(p, 10), [122, 92, 54], [181, 79, 78], HOLE, [228, 90, 99], [264, 96, 100], [276, 92, 90], [292, 92, 70], [303 + i * 9, 91, 66]]));

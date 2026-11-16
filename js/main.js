@@ -1,4 +1,4 @@
-import { initHero } from './hero.js?v=20261116';
+import { initHero } from './hero.js?v=20261116b';
 
 const $ = s => document.querySelector(s);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -67,14 +67,14 @@ function lazy(el, load) {
   io.observe(el);
 }
 lazy($('#driveStage'), async () => {
-  const { initDrive } = await import('./drive.js?v=20261116');
+  const { initDrive } = await import('./drive.js?v=20261116b');
   await initDrive({ stage: $('#driveStage'), canvas: $('#driveCanvas'), balloons: $('#driveBalloons'), slider: $('#driveExplode'), list: $('#driveParts') });
 });
 lazy($('#robotStage'), async () => {
-  const { initRobot } = await import('./robot.js?v=20261116');
+  const { initRobot } = await import('./robot.js?v=20261116b');
   await initRobot({ stage: $('#robotStage'), canvas: $('#robotCanvas'), tag: $('#robotTag'), slider: $('#robotExplode'), list: $('#robotParts'), wiringToggle: $('#robotWiring'), coverToggle: $('#robotCover') });
 });
 lazy($('#otvStage'), async () => {
-  const { initOtv } = await import('./otv.js?v=20261116');
+  const { initOtv } = await import('./otv.js?v=20261116b');
   await initOtv({ stage: $('#otvStage'), canvas: $('#otvCanvas'), tag: $('#otvTag'), slider: $('#otvExplode'), list: $('#otvParts'), wiringToggle: $('#otvWiring'), topToggle: $('#otvTop') });
 });

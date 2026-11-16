@@ -512,8 +512,6 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li data-group="chassis">ENES 100 at Maryland. Our rover drives itself to a bowl of water, measures the depth, checks it for plastic and collects a 20 mL sample.</li>
               <li data-group="control">I was the electronics lead: the circuit diagram, the power distribution and the debugging, plus some of the early CAD.</li>
               <li data-group="power">One 12 V battery runs everything. It feeds the Arduino Mega and the drive H-bridge directly, and a buck converter steps it down to 5 V for a second H-bridge that runs the rack motor, the LEDs and the photoresistor.</li>
-              <li data-group="power">At first the rack motor only turned one way. We had the buck converter after the H-bridge, and it only passes current in one direction. Moving it in front of the H-bridge fixed it.</li>
-              <li data-group="sensor">The camera could not stay connected to the vision system, so a photoresistor and two LEDs look for the plastic instead. An ultrasonic sensor reads the depth.</li>
               <li data-group="mission">A piece of diaper on a rack and pinion soaks up the sample. Our first idea, a printed bucket, did not collect enough water.</li>
             </ul>
             <div class="learned"><span class="note">What I learned</span><q>Work out the voltage every part needs before wiring anything.</q></div>
@@ -524,7 +522,6 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
           <figure class="landscape" style="--ar:1.333"><div class="shot"><img loading="lazy" src="assets/rover-arena.webp" width="1400" height="1050" alt="The finished rover in the arena, with its marker on top, the rack raised and the diaper out in front"></div><figcaption class="note">The finished rover in the arena.</figcaption></figure>
         </div>
         <div class="strip fit">
-          <figure style="--ar:.752"><div class="shot"><img loading="lazy" src="assets/rover-rack-test.webp" width="903" height="1200" alt="The mounting board and rack motor wired to an Arduino, an H-bridge and a bench power supply"></div><figcaption class="note">Testing the rack and pinion from a bench supply.</figcaption></figure>
           <figure style="--ar:.949"><div class="shot" style="background:#fff"><img loading="lazy" src="assets/rover-circuit.webp" width="1309" height="1379" alt="Circuit diagram: an Arduino Mega wired to three limit switches, two ultrasonic sensors, a WiFi module, two H-bridges, a buck converter, three motors, a photoresistor, two LEDs, a switch and a 12 volt battery" style="object-fit:contain"></div><figcaption class="note">My circuit diagram.</figcaption></figure>
           <figure class="landscape" style="--ar:1.535"><div class="shot"><img loading="lazy" src="assets/rover-wiring.webp" width="1400" height="912" alt="The rover on a bench part way through wiring, with the two plates, a wheel, the water shield and loose red and black leads"></div><figcaption class="note">The first wiring pass, running from a bench supply.</figcaption></figure>
         </div>
@@ -667,7 +664,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 </main>
 
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
-<script type="module" src="js/main.js?v=20261116"></script>
+<script type="module" src="js/main.js?v=20261116b"></script>
 <script>
 /* Resume download. On a normal host the plain link downloads the PDF.
    Inside the claude.ai preview, links can't download, so hand the file over through the viewer instead. */
