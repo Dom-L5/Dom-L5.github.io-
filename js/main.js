@@ -1,4 +1,4 @@
-import { initHero } from './hero.js';
+import { initHero } from './hero.js?v=20261115';
 
 const $ = s => document.querySelector(s);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
