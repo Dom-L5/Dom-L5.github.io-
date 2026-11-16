@@ -1,45 +1,11 @@
 // The robot: Dom's real SolidWorks assembly, rigged at its eight servo axes and walking the trot gait.
 import * as THREE from 'three';
-import { makeStage, blobShadow, smooth } from './tech.js';
+import { makeStage, blobShadow, smooth, creased } from './tech.js?v=20261116';
 import { buildElectronics } from './wiring.js';
 
 const COLORS = { body: 0x2a3035, cover: 0x30373c, link: 0x2a3035, arm: 0x2a3035, foot: 0x2a3035, servo: 0x171b1e, pcb: 0x1f7a4d, battery: 0x3d6fb4, switch: 0x101214, hw: 0xaab4b9 };
 const EDGES = { body: 1, cover: 1, link: 1, arm: 1, foot: 1, servo: 1, battery: 1 };
 const HILITE = { body: ['body', 'cover'], pcb: ['pcb', 'switch'], servo: ['servo'], leg: ['link', 'arm', 'foot'] };
-
-function creased(pos, idx, cosA) {
-  // per-corner normals: smooth across shallow angles, sharp across CAD edges
-  const nt = idx.length / 3, fn = new Float32Array(nt * 3), nv = pos.length / 3;
-  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3();
-  const count = new Uint32Array(nv + 1);
-  for (let t = 0; t < nt; t++) {
-    const i0 = idx[t * 3], i1 = idx[t * 3 + 1], i2 = idx[t * 3 + 2];
-    a.fromArray(pos, i0 * 3); b.fromArray(pos, i1 * 3); c.fromArray(pos, i2 * 3);
-    n.copy(b).sub(a).cross(c.sub(a)); const area = n.length(); if (area > 0) n.multiplyScalar(1 / area);
-    fn[t * 3] = n.x; fn[t * 3 + 1] = n.y; fn[t * 3 + 2] = n.z;
-    count[i0 + 1]++; count[i1 + 1]++; count[i2 + 1]++;
-  }
-  for (let i = 0; i < nv; i++) count[i + 1] += count[i];
-  const fill = count.slice(0, nv), adj = new Uint32Array(idx.length);
-  for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) adj[fill[idx[t * 3 + k]]++] = t;
-  const P = new Float32Array(nt * 9), N = new Float32Array(nt * 9);
-  for (let t = 0; t < nt; t++) {
-    const fx = fn[t * 3], fy = fn[t * 3 + 1], fz = fn[t * 3 + 2];
-    for (let k = 0; k < 3; k++) {
-      const v = idx[t * 3 + k]; let x = 0, y = 0, z = 0;
-      for (let j = count[v]; j < count[v + 1]; j++) {
-        const o = adj[j] * 3;
-        if (fn[o] * fx + fn[o + 1] * fy + fn[o + 2] * fz > cosA) { x += fn[o]; y += fn[o + 1]; z += fn[o + 2]; }
-      }
-      const l = Math.hypot(x, y, z) || 1, w = (t * 3 + k) * 3;
-      N[w] = x / l; N[w + 1] = y / l; N[w + 2] = z / l;
-      P[w] = pos[v * 3]; P[w + 1] = pos[v * 3 + 1]; P[w + 2] = pos[v * 3 + 2];
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
-  return g;
-}
 
 export async function initRobot({ stage, canvas, tag, slider, list, wiringToggle, coverToggle }) {
   const [{ manifest, b64 }, { wiring }] = await Promise.all([import('./robot-data.js'), import('./wiring-data.js')]);

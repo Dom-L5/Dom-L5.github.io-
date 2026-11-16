@@ -1,21 +1,16 @@
-// The blind drive in its window, modelled from the photos of the prototype. Units are millimetres.
+// The blind drive in its window. The printed motor holder and the electronics enclosure are Dom's real STL files;
+// the blind, motor, boards and window are modelled from the photos of the prototype. Units are millimetres.
 // x runs along the head rail (the drive is at the right-hand end), y is up, z points into the room.
 import * as THREE from 'three';
-import { makeStage, drawingMaterial, addEdges, blobShadow, smooth } from './tech.js';
+import { makeStage, drawingMaterial, addEdges, blobShadow, smooth, unpack, cadMesh } from './tech.js?v=20261116';
 
 const WHITE = 0xf6f7f7, FRAME = 0xd3d9da, STEEL = 0xb9c3c8, DARK = 0x23292d;
 const box = (w, h, d, mat, x = 0, y = 0, z = 0, edges = true) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (edges) addEdges(m); return m; };
 const cylX = (r, len, mat, x, y = 0, seg = 40) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg), mat); m.rotation.z = Math.PI / 2; m.position.set(x, y, 0); addEdges(m, 0x111a1f, 0.5, 40); return m; };
 
-function capShape(depth) {
-  // front profile of the button box's cap: square against the rail, rounded on the outer top edge
-  const s = new THREE.Shape(); const x0 = -3, x1 = 70, y0 = -13, y1 = 23, r = 15;
-  s.moveTo(x0, y0); s.lineTo(x1, y0); s.lineTo(x1, y1 - r); s.quadraticCurveTo(x1, y1, x1 - r, y1); s.lineTo(x0, y1); s.closePath();
-  const g = new THREE.ExtrudeGeometry(s, { depth: depth - 3, bevelEnabled: true, bevelThickness: 1.5, bevelSize: 1.5, bevelSegments: 2, curveSegments: 8 });
-  g.translate(0, 0, -(depth - 3) / 2); return g;
-}
-
-export function initDrive({ stage, canvas, balloons, slider, list }) {
+export async function initDrive({ stage, canvas, balloons, slider, list }) {
+  const { manifest, b64 } = await import('./drive-data.js');
+  const cad = Object.fromEntries(unpack(manifest, b64).map(p => [p.name, p]));
   const S = makeStage(stage, canvas, { fov: 24, yaw: 0.56, pitch: 0.2, pitchRange: [-0.45, 0.9] });
   const { turn, camera, st } = S;
   const root = new THREE.Group(); turn.add(root);
@@ -30,79 +25,75 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
   frame.add(box(320, 50, 130, mFrame, -140, 11, -93), box(50, 342, 130, mFrame, -5, -185, -93));
   frame.add(box(22, 24, 8, mFrame, -262, 0, -24), box(22, 24, 8, mFrame, -70, 0, -24));   // the two mounting brackets
   const glass = new THREE.Mesh(new THREE.PlaneGeometry(270, 342), new THREE.MeshBasicMaterial({ color: 0xb9d6e6, transparent: true, opacity: 0.32, depthWrite: false }));
-  glass.position.set(-165, -185, -140); frame.add(glass);
+  glass.position.set(-165, -185, -140); frame.add(glass); frame.position.z = -8;
 
-  // 1 the blind: head rail (an open-topped channel), tilt rod, stock tilt mechanism, slats, ladder cords
+  // 1 the blind: head rail (an open-topped channel, sized to take the printed motor tray), tilt rod, stock tilt mechanism, slats, ladder cords
   const blind = new THREE.Group(); const mRail = mat('1', WHITE);
-  blind.add(box(300, 2, 40, mRail, -150, -16, 0), box(300, 32, 2, mRail, -150, -1, 19), box(300, 32, 2, mRail, -150, -1, -19));
-  const rod = box(170, 4, 4, drawingMaterial(STEEL, { metalness: 0.3 }), -215, 4, 0, false); blind.add(rod);
-  blind.add(box(18, 20, 18, mRail, -131, 2, 0));
+  blind.add(box(300, 2, 58, mRail, -150, -31, 0), box(300, 52, 2, mRail, -150, -5, 28), box(300, 52, 2, mRail, -150, -5, -28));
+  const rod = box(188, 4, 4, drawingMaterial(STEEL, { metalness: 0.3 }), -206, 0, 0, false); blind.add(rod);
+  blind.add(box(18, 22, 18, mRail, -142, -3, 0));
   const slats = [];
-  for (let i = 0; i < 7; i++) { const s = box(296, 2.6, 50, mRail, -150, -42 - i * 43.5, 0); slats.push(s); blind.add(s); }
+  for (let i = 0; i < 7; i++) { const s = box(296, 2.6, 50, mRail, -150, -58 - i * 43.5, 0); slats.push(s); blind.add(s); }
   const cordMat = new THREE.LineBasicMaterial({ color: 0x8b979c });
   for (const x of [-250, -70]) for (const z of [-25, 25]) {
-    const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, -17, z * 0.6), new THREE.Vector3(x, -322, z * 0.6)]), cordMat); blind.add(l);
+    const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, -32, z * 0.6), new THREE.Vector3(x, -338, z * 0.6)]), cordMat); blind.add(l);
   }
 
   // 2 hex shaft
   const shaft = new THREE.Group();
-  const hex = cylX(5.5, 32, mat('2', 0xd9b56a, { metalness: 0.2, roughness: 0.5 }), -107, 4, 6); shaft.add(hex);
-  // 3 gearmotor, lying in the tray
+  const hex = cylX(5.5, 32, mat('2', 0xd9b56a, { metalness: 0.2, roughness: 0.5 }), -96, 0, 6); shaft.add(hex);
+  // 3 gearmotor: the gearbox lies in the tray, the motor's back end sits in the bore of the cap
   const motor = new THREE.Group(); const mMotor = mat('3', STEEL, { metalness: 0.35, roughness: 0.45 });
-  motor.add(cylX(7, 5, mMotor, -93.5, 4, 24), cylX(16, 36, mMotor, -73, 4), cylX(15.5, 42, mMotor, -34, 4), cylX(13.5, 10, drawingMaterial(DARK), -8, 4));
-  // 4 the printed housing: a motor tray that slides into the rail, and the button box that stays outside
+  motor.add(cylX(8, 6, mMotor, -77, 0, 24), cylX(21.5, 34, mMotor, -57, 0), cylX(20.5, 62, mMotor, -9, 0), cylX(16, 10, drawingMaterial(DARK), 27, 0));
+  // 4 the printed motor holder (the real STL): a tray that slides into the rail, a cap that stays outside it,
+  //   and the plate that hangs down from the cap with the holes for the two buttons and the LED
   const housing = new THREE.Group(); const mHouse = mat('4', WHITE);
-  housing.add(box(98, 2.4, 33, mHouse, -48, -13.6, 0), box(98, 13, 2, mHouse, -48, -8.2, 16.4), box(98, 13, 2, mHouse, -48, -8.2, -16.4), box(2.4, 13, 33, mHouse, -95.8, -8.2, 0));
-  const cap = new THREE.Mesh(capShape(50), mHouse); addEdges(cap, 0x111a1f, 0.55, 25); cap.position.z = 1; housing.add(cap);
-  housing.add(box(60, 88, 44, mHouse, 32, -56.5, 1));
-  // 5 buttons and LED
+  housing.add(cadMesh(cad.holder, mHouse, { edges: 30 }));
+  // 5 buttons and LED, in the holes of the plate
   const ctl = new THREE.Group(); const bez = drawingMaterial(DARK); mat('5', 0x1d9c4f);
   const mkBtn = (m, x) => {
     const g = new THREE.Group();
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(9.2, 9.2, 5, 32), bez); b.rotation.x = Math.PI / 2; addEdges(b, 0x111a1f, 0.4, 40);
-    const c = new THREE.Mesh(new THREE.CylinderGeometry(6.4, 7, 7, 32), m); c.rotation.x = Math.PI / 2; c.position.z = 5; addEdges(c, 0x111a1f, 0.4, 40);
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 18, 20), bez); stem.rotation.x = Math.PI / 2; stem.position.z = -11;
-    g.add(b, c, stem); g.position.set(x, -62, 25.5); return g;
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(9.4, 9.4, 4, 32), bez); b.rotation.x = Math.PI / 2; addEdges(b, 0x111a1f, 0.4, 40);
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(6.2, 6.8, 7, 32), m); c.rotation.x = Math.PI / 2; c.position.z = 5; addEdges(c, 0x111a1f, 0.4, 40);
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(7.3, 7.3, 22, 20), bez); stem.rotation.x = Math.PI / 2; stem.position.z = -13;
+    g.add(b, c, stem); g.position.set(x, -53.9, 32.2); return g;
   };
-  ctl.add(mkBtn(mats['5'], 19), mkBtn(drawingMaterial(0xc2332b), 45));
-  const led = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.3, 6, 16), new THREE.MeshBasicMaterial({ color: 0x6fb6ff })); led.rotation.x = Math.PI / 2; led.position.set(32, -82, 23.5); ctl.add(led);
+  ctl.add(mkBtn(mats['5'], 16.4), mkBtn(drawingMaterial(0xc2332b), 54.5));
+  const led = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 7, 16), new THREE.MeshBasicMaterial({ color: 0x6fb6ff })); led.rotation.x = Math.PI / 2; led.position.set(35.5, -69.7, 29); ctl.add(led);
 
-  // 8 electronics enclosure, fixed under the top of the opening, behind the blind: a long shallow tier for the
-  //   battery pack and a deeper tier for the Arduino. 6 the two boards, 7 the battery pack.
+  // 8 electronics enclosure (the real STL), fixed under the top of the opening, behind the blind. It is one box, deep at the
+  //   drive end for the Arduino and shallow along the top for the battery pack, closed by an end cap with the cable hole.
+  //   6 the two boards, 7 the battery pack.
   const enc = new THREE.Group(); const mEnc = mat('8', WHITE);
-  const shell = new THREE.Group();
-  const wall = (w, h, d, x, y, z) => shell.add(box(w, h, d, mEnc, x, y, z));
-  wall(152, 24, 2.4, -124, 12, -41.2); wall(152, 24, 2.4, -124, 12, -110.8); wall(2.4, 24, 72, -198.8, 12, -76); wall(60, 2.4, 72, -170, 1.2, -76);   // shallow tier
-  wall(92, 50, 2.4, -94, -25, -41.2); wall(92, 50, 2.4, -94, -25, -110.8); wall(2.4, 50, 72, -138.8, -25, -76); wall(2.4, 74, 72, -49.2, -13, -76); wall(92, 2.4, 72, -94, -48.8, -76);   // deep tier
-  const lid = box(156, 2.4, 76, mEnc, -124, 22.8, -76);
-  const uno = box(68.6, 1.8, 53.4, mat('6', 0x12808a), -94, -40, -76);
-  const shield = box(68.6, 1.8, 53.4, drawingMaterial(0x2456a8), -94, -28, -76);
+  const shell = cadMesh(cad.shell, mEnc, { edges: 30 }), lid = cadMesh(cad.lid, mEnc, { edges: 30 });
+  const uno = box(68.6, 1.8, 53.4, mat('6', 0x12808a), -92, -80, -81.2);
+  const shield = box(68.6, 1.8, 53.4, drawingMaterial(0x2456a8), -92, -68, -81.2);
   const hdr = drawingMaterial(DARK);
   shield.add(box(48, 9, 2.5, hdr, 2, -5.5, 24, false), box(42, 9, 2.5, hdr, -4, -5.5, -24, false), box(16, 9, 10, drawingMaterial(0x2f6fd0), 22, 5.5, 18));
-  uno.add(box(12, 11, 16, drawingMaterial(STEEL, { metalness: 0.4 }), -30, 6, -12), box(9, 11, 14, hdr, -31, 6, 14));
-  const batt = box(112, 15, 58, mat('7', DARK), -128, 13.5, -76);
-  enc.add(shell, lid, uno, shield, batt); enc.position.set(0, -38, 0);   // up under the top of the opening
-  // sheathed cable from the enclosure, behind the blind, to the back of the button box
-  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(-49, -36, -76), new THREE.Vector3(-40, -34, -44), new THREE.Vector3(-33, -36, -27), new THREE.Vector3(-8, -42, -24.5), new THREE.Vector3(18, -50, -24), new THREE.Vector3(33, -56, -21)]);
-  const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 2.6, 8), new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.6, transparent: true }));
+  uno.add(box(12, 11, 16, drawingMaterial(STEEL, { metalness: 0.4 }), 30, 6, -12), box(9, 11, 14, hdr, 31, 6, 14));
+  const batt = box(112, 15, 58, mat('7', DARK), -120, -27, -81.2);
+  enc.add(shell, lid, uno, shield, batt);
+  // sheathed cable from the hole in the end cap, round the front of the frame behind the blind, to the back of the buttons
+  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(-46, -52.5, -81.8), new THREE.Vector3(-38, -52, -66), new THREE.Vector3(-36, -51, -44), new THREE.Vector3(-26, -50, -32.5), new THREE.Vector3(8, -50, -32), new THREE.Vector3(27, -52, -22), new THREE.Vector3(35, -54, 6)]);
+  const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 56, 2.6, 8), new THREE.MeshStandardMaterial({ color: DARK, roughness: 0.6, transparent: true }));
 
   root.add(frame, blind, shaft, motor, housing, ctl, enc, cable);
-  const shadow = blobShadow(640, 300, 0.12); shadow.position.set(-80, -372, -30); root.add(shadow);
-  const home = new THREE.Vector3(86, 127, 30), away = new THREE.Vector3(66, 112, -70);
+  const shadow = blobShadow(640, 300, 0.12); shadow.position.set(-80, -388, -30); root.add(shadow);
+  const home = new THREE.Vector3(86, 152, 30), away = new THREE.Vector3(80, 130, -70);
 
   // taking it apart: first the blind comes forward out of the window, then the drive slides out of the rail
   const P = (o, a, b) => ({ o, home: o.position.clone(), a: new THREE.Vector3(...a), b: new THREE.Vector3(...b) });
   const moves = [
-    P(blind, [0, 0, 196], [0, 0, 0]), P(shaft, [0, 0, 196], [112, 0, 0]), P(motor, [0, 0, 196], [150, 46, 0]),
-    P(housing, [0, 0, 196], [150, 0, 0]), P(ctl, [0, 0, 196], [150, 0, 54]),
-    P(enc, [0, 0, 0], [-205, -36, 60]), P(shell, [0, 0, 0], [0, -92, 0]), P(uno, [0, 0, 0], [0, -34, 0]), P(shield, [0, 0, 0], [0, -14, 0]), P(batt, [0, 0, 0], [0, -26, 0]),
+    P(blind, [0, 0, 196], [0, 0, 0]), P(shaft, [0, 0, 196], [20, 0, 0]), P(motor, [0, 0, 196], [72, 0, 0]),
+    P(housing, [0, 0, 196], [196, 0, 0]), P(ctl, [0, 0, 196], [196, 0, 52]),
+    P(enc, [0, 0, 0], [-190, -30, 150]), P(shell, [0, 0, 0], [-132, 0, 0]), P(lid, [0, 0, 0], [40, 0, 0]), P(uno, [0, 0, 0], [0, -12, 0]), P(batt, [0, 0, 0], [0, 8, 0]),
   ];
 
   const B = [
-    [1, blind, [-285, -129, 22], [-0.07, 0.06], 0], [2, shaft, [-107, 10, 0], [0.0, -0.15], 0.62], [3, motor, [-40, 20, 0], [0.07, -0.09], 0.62],
-    [4, housing, [30, 23, 20], [0.09, -0.09], 0], [5, ctl, [45, -62, 34], [0.1, 0.035], 0],
-    [6, shield, [-70, -27, -50], [0.11, 0.05], 0.78], [7, batt, [-80, 13, -47], [0.08, -0.03], 0.78], [8, enc, [-190, 24, -45], [-0.03, -0.11], 0.62],
-    [9, frame, [-190, 36, -40], [-0.03, -0.065], 0],
+    [1, blind, [-285, -150, 22], [-0.07, 0.06], 0], [2, shaft, [-96, 6, 0], [0.0, -0.15], 0.62], [3, motor, [-20, 21, 0], [0.04, -0.12], 0.62],
+    [4, housing, [50, 29, 0], [0.09, -0.09], 0], [5, ctl, [54.5, -54, 40], [0.1, 0.035], 0],
+    [6, shield, [30, 1, 27], [0.1, 0.06], 0.78], [7, batt, [50, 8, 29], [0.1, -0.03], 0.78], [8, shell, [-150, -15, -41], [-0.04, -0.11], 0.62],
+    [9, frame, [-190, 36, -28], [-0.03, -0.065], 0],
   ].map(([n, obj, p, off, min]) => {
     const el = document.createElement('div'); el.className = 'balloon'; el.textContent = n; balloons.appendChild(el);
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); balloons.querySelector('svg').appendChild(line);
@@ -131,7 +122,7 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
       const a = smooth(0, 0.5, e), b = smooth(0.4, 1, e);
       for (const m of moves) m.o.position.copy(m.home).addScaledVector(m.a, a).addScaledVector(m.b, b);
       root.position.lerpVectors(home, away, e * e * (3 - 2 * e));
-      camera.position.set(0, 0, (1090 + 300 * e) / Math.min(1, aspect / 1.45)); camera.lookAt(0, 0, 0);
+      camera.position.set(0, 0, (1130 + 400 * e) / Math.min(1, aspect / 1.45)); camera.lookAt(0, 0, 0);
       cable.material.opacity = 1 - smooth(0.02, 0.12, e); cable.visible = e < 0.12;
       // assembled, it runs: the motor turns the shaft and rod, and the slats tilt open and closed
       const run = (1 - smooth(0, 0.06, e)) * (reduce ? 0 : 1);
@@ -155,5 +146,5 @@ export function initDrive({ stage, canvas, balloons, slider, list }) {
       }
     },
   });
-  stage.__view = { S, set: v => { auto = false; eT = v; slider.value = v * 100; } };
+  stage.__view = { S, st, set: v => { auto = false; eT = v; slider.value = v * 100; } };
 }

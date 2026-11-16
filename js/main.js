@@ -1,4 +1,4 @@
-import { initHero } from './hero.js?v=20261115';
+import { initHero } from './hero.js?v=20261116';
 
 const $ = s => document.querySelector(s);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,21 +55,6 @@ document.querySelectorAll('[data-toggle-video]').forEach(b => {
   v.addEventListener('play', sync); v.addEventListener('pause', sync); sync();
 });
 
-// ---- PickyPal: the method, step by step ----
-const steps = [
-  'Completely avoidant.',
-  'Just smell it.',
-  'One small bite.',
-  'A little more with dinner, every night.',
-  'Comfortable. On to the next food.',
-];
-const ladderBtns = [...document.querySelectorAll('#ladder button')], read = $('#ladderRead');
-function setStep(i) {
-  ladderBtns.forEach((b, k) => b.setAttribute('aria-pressed', k <= i ? 'true' : 'false'));
-  read.innerHTML = `<b>Chicken, step ${i + 1} of 5.</b> ${steps[i]}`;
-}
-ladderBtns.forEach((b, i) => b.addEventListener('click', () => setStep(i)));
-
 // ---- the scoreboard fills to where it really ended ----
 document.querySelectorAll('#score .fill').forEach(f => { const w = parseFloat(f.dataset.w) || 0; if (w) f.style.width = w + '%'; else f.hidden = true; });
 
@@ -82,10 +67,14 @@ function lazy(el, load) {
   io.observe(el);
 }
 lazy($('#driveStage'), async () => {
-  const { initDrive } = await import('./drive.js');
-  initDrive({ stage: $('#driveStage'), canvas: $('#driveCanvas'), balloons: $('#driveBalloons'), slider: $('#driveExplode'), list: $('#driveParts') });
+  const { initDrive } = await import('./drive.js?v=20261116');
+  await initDrive({ stage: $('#driveStage'), canvas: $('#driveCanvas'), balloons: $('#driveBalloons'), slider: $('#driveExplode'), list: $('#driveParts') });
 });
 lazy($('#robotStage'), async () => {
-  const { initRobot } = await import('./robot.js');
+  const { initRobot } = await import('./robot.js?v=20261116');
   await initRobot({ stage: $('#robotStage'), canvas: $('#robotCanvas'), tag: $('#robotTag'), slider: $('#robotExplode'), list: $('#robotParts'), wiringToggle: $('#robotWiring'), coverToggle: $('#robotCover') });
+});
+lazy($('#otvStage'), async () => {
+  const { initOtv } = await import('./otv.js?v=20261116');
+  await initOtv({ stage: $('#otvStage'), canvas: $('#otvCanvas'), tag: $('#otvTag'), slider: $('#otvExplode'), list: $('#otvParts'), wiringToggle: $('#otvWiring'), topToggle: $('#otvTop') });
 });

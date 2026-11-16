@@ -82,3 +82,59 @@ export function blobShadow(w, d, opacity = 0.2) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, opacity, depthWrite: false }));
   m.rotation.x = -Math.PI / 2; return m;
 }
+
+// ---- real CAD meshes ----
+// The STL exports are packed offline into one base64 blob per model: 16-bit positions inside a bounding box, then indices.
+export function creased(pos, idx, cosA) {
+  // per-corner normals: smooth across shallow angles, sharp across CAD edges
+  const nt = idx.length / 3, fn = new Float32Array(nt * 3), nv = pos.length / 3;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3();
+  const count = new Uint32Array(nv + 1);
+  for (let t = 0; t < nt; t++) {
+    const i0 = idx[t * 3], i1 = idx[t * 3 + 1], i2 = idx[t * 3 + 2];
+    a.fromArray(pos, i0 * 3); b.fromArray(pos, i1 * 3); c.fromArray(pos, i2 * 3);
+    n.copy(b).sub(a).cross(c.sub(a)); const area = n.length(); if (area > 0) n.multiplyScalar(1 / area);
+    fn[t * 3] = n.x; fn[t * 3 + 1] = n.y; fn[t * 3 + 2] = n.z;
+    count[i0 + 1]++; count[i1 + 1]++; count[i2 + 1]++;
+  }
+  for (let i = 0; i < nv; i++) count[i + 1] += count[i];
+  const fill = count.slice(0, nv), adj = new Uint32Array(idx.length);
+  for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) adj[fill[idx[t * 3 + k]]++] = t;
+  const P = new Float32Array(nt * 9), N = new Float32Array(nt * 9);
+  for (let t = 0; t < nt; t++) {
+    const fx = fn[t * 3], fy = fn[t * 3 + 1], fz = fn[t * 3 + 2];
+    for (let k = 0; k < 3; k++) {
+      const v = idx[t * 3 + k]; let x = 0, y = 0, z = 0;
+      for (let j = count[v]; j < count[v + 1]; j++) {
+        const o = adj[j] * 3;
+        if (fn[o] * fx + fn[o + 1] * fy + fn[o + 2] * fz > cosA) { x += fn[o]; y += fn[o + 1]; z += fn[o + 2]; }
+      }
+      const l = Math.hypot(x, y, z) || 1, w = (t * 3 + k) * 3;
+      N[w] = x / l; N[w + 1] = y / l; N[w + 2] = z / l;
+      P[w] = pos[v * 3]; P[w + 1] = pos[v * 3 + 1]; P[w + 2] = pos[v * 3 + 2];
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+  return g;
+}
+
+export function unpack(manifest, b64) {
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer, { lo, span } = manifest;
+  return manifest.parts.map(p => {
+    const q = new Uint16Array(bin, p.vo, p.vn * 3), pos = new Float32Array(p.vn * 3);
+    for (let i = 0; i < p.vn; i++) for (let k = 0; k < 3; k++) pos[i * 3 + k] = lo[k] + q[i * 3 + k] / 65535 * span[k];
+    const idx = p.i32 ? new Uint32Array(bin, p.io, p.tn * 3) : new Uint16Array(bin, p.io, p.tn * 3);
+    return { ...p, pos, idx };
+  });
+}
+// a mesh from one unpacked part, with CAD-style creases and optional outline edges
+export function cadMesh(part, material, { crease = 0.6, edges = 0, edgeMat = null } = {}) {
+  const mesh = new THREE.Mesh(creased(part.pos, part.idx, Math.cos(crease)), material);
+  if (edges) {
+    const ig = new THREE.BufferGeometry(); ig.setAttribute('position', new THREE.BufferAttribute(part.pos, 3)); ig.setIndex(new THREE.BufferAttribute(part.idx, 1));
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(ig, edges), edgeMat || new THREE.LineBasicMaterial({ color: 0x111a1f, transparent: true, opacity: 0.55 }));
+    e.raycast = () => {}; mesh.add(e); ig.dispose();
+  }
+  return mesh;
+}

@@ -84,8 +84,8 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     L.ws = wsLayout(); makeSky(); g.imageSmoothingEnabled = false;
   }
   function wsLayout() {
-    const port = W < H * 0.9, size = { blinds: [26, 42], pickypal: [36, 24], challenge: [14, 22], robot: [34, 15], next: [26, 18] }, it = {};
-    const tiers = port ? [[Math.round(H * 0.36), ['next', 'challenge']], [Math.round(H * 0.55), ['pickypal']], [Math.round(H * 0.77), ['blinds', 'robot']]] : [[Math.round(H * 0.72), ['blinds', 'pickypal', 'challenge', 'robot', 'next']]];
+    const port = W < H * 0.9, size = { blinds: [26, 42], rover: [36, 24], challenge: [14, 22], robot: [34, 15], next: [26, 18] }, it = {};
+    const tiers = port ? [[Math.round(H * 0.36), ['next', 'challenge']], [Math.round(H * 0.55), ['rover']], [Math.round(H * 0.77), ['blinds', 'robot']]] : [[Math.round(H * 0.72), ['blinds', 'rover', 'challenge', 'robot', 'next']]];
     const printer = !port && W >= 300, x0 = port ? 12 : Math.round(W * (printer ? 0.19 : 0.06)), x1 = W - (port ? 12 : Math.round(W * 0.05));
     for (const [y, keys] of tiers) keys.forEach((q, i) => { const [w, h] = size[q]; it[q] = { x: Math.round(x0 + (x1 - x0) * (i + 0.5) / keys.length - w / 2), y, w, h, slot: (x1 - x0) / keys.length }; });
     return { port, tiers, it, printer, x0, x1, by: tiers[tiers.length - 1][0] };
@@ -117,9 +117,15 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(x + 4, y - 39, 18, 2, '#f4ecdc'); R(x + 19, y - 40, 4, 7, '#fff7e8'); R1(x + 20, y - 36, 1, 1, '#25B862'); R1(x + 21.6, y - 36, 1, 1, '#C2332B');
     const a = 0.5 + 0.5 * Math.sin(t * 0.8); for (let i = 0; i < 9; i++) R1(x + 5, y - 36 + i * 3.5, 14, 1 + 1.9 * a, '#efe4cf');
   }
-  function iLaptop(x, y, t) {
-    R(x, y - 2, 36, 2, '#c9c2bb'); R(x + 12, y - 2, 12, 1, '#a69f99'); R(x + 3, y - 24, 30, 22, '#2b2530'); R(x + 5, y - 22, 26, 18, '#fff3e4'); R(x + 5, y - 22, 26, 3, '#f7b7c3');
-    R(x + 7, y - 17, 10, 6, '#bfe8d2'); R(x + 19, y - 17, 10, 6, '#cdbdf2'); R(x + 7, y - 9, 22, 2, '#eadfd2'); R(x + 7, y - 9, 22 * (0.2 + 0.75 * ((t * 0.12) % 1)), 2, '#7ccf9e'); R(x + 7, y - 6, 12, 1, '#d8cbbb');
+  function iRover(x, y, t) {                                                                                                                             // the ENES 100 rover: two plates, a wheel, and the rack dipping its diaper
+    const P = '#35557a', V = '#6b4bb0', K = '#17191c', d = Math.round(1.5 + 1.5 * Math.sin(t * 0.9));
+    R(x + 32, y - 24 + d, 2, 19, '#1c1f22'); R(x + 31, y - 9 + d, 4, 6, '#f4f2ec'); R(x + 31, y - 9 + d, 4, 1, '#d9d4c8');                              // rack and diaper
+    R(x + 4, y - 14, 5, 6, '#2f7d4f'); R(x + 11, y - 11, 9, 2, '#1b6f93'); R(x + 20, y - 12, 4, 4, '#a62a2a'); R(x + 13, y - 15, 1, 4, '#e2b93b'); R(x + 17, y - 16, 1, 5, '#c8322c');   // battery, Mega, H-bridge, wires
+    R(x + 2, y - 8, 28, 1, P); R(x + 2, y - 17, 28, 1, P); R(x + 2, y - 16, 1, 8, K); R(x + 25, y - 16, 4, 8, V); R(x + 26, y - 16, 1, 8, '#7d5fca');   // plates, standoff, water shield
+    R(x + 4, y - 4, 2, 4, '#9aa3a8'); R(x + 23, y - 4, 2, 4, '#9aa3a8');                                                                                    // ball casters
+    R(x + 9, y - 10, 6, 10, K); R(x + 7, y - 8, 10, 6, K); R(x + 11, y - 6, 2, 2, '#b9c2c7'); R1(x + 9 + ((t * 2) % 2 | 0) * 5, y - 8, 1, 1, '#3a4248'); // wheel
+    R(x + 8, y - 19, 11, 2, '#f2efe6'); R(x + 10, y - 19, 2, 1, '#111417'); R(x + 14, y - 18, 2, 1, '#111417'); R(x + 16, y - 19, 1, 1, '#111417');       // marker
+    R(x + 23, y - 19, 11, 2, V); R(x + 27, y - 23, 3, 4, '#e9e6dc'); R(x + 30, y - 21, 2, 2, '#3d6fb4'); R(x + 3, y - 19, 2, 2, '#8f1f1f');                // mission board, rack motor, pinion, kill switch
   }
   function iPhone(x, y, t) {
     R(x + 1, y - 3, 12, 3, '#6a4330'); R(x + 2, y - 22, 10, 20, '#18141c'); R(x + 3, y - 20, 8, 16, '#241e2e');
@@ -248,17 +254,16 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
     R(-B, by, 2 * B, 4, '#b07a48'); R(-B, by, 2 * B, 1, '#d29c60'); R(-B, by + 4, 2 * B, 12, '#7a4e32'); R(-B, by + 16, 2 * B, 2, '#33202a'); R(-B, by + 18, 2 * B, B, '#2b1b23');   // the bench
     R(Q.x0 - 4, by + 16, 4, B, '#5f3d2c'); R(Q.x1, by + 16, 4, B, '#5f3d2c');
     const pX = 4; if (Q.printer) iPrinter(pX, by, t);
-    iBlinds(I.blinds.x, I.blinds.y, t); iLaptop(I.pickypal.x, I.pickypal.y, t); iPhone(I.challenge.x, I.challenge.y, t); iRobot(I.robot.x, I.robot.y, t); iNext(I.next.x, I.next.y);
-    R(I.pickypal.x + 39, I.pickypal.y - 6, 5, 6, '#f1e3c6'); R(I.pickypal.x + 44, I.pickypal.y - 5, 1, 3, '#f1e3c6');                                    // a mug by the laptop
-    if (Q.port) { const py = I.pickypal.y; if (I.pickypal.x - Q.x0 >= 36) iSolder(Q.x0 + 3, py, t); else if (I.pickypal.x - Q.x0 >= 21) iSolder(Q.x0 - 11, py, t, true); if (Q.x1 - (I.pickypal.x + 46) >= 12) iCalc(Q.x1 - 12, py); }   // on a phone, only the shelf with room gets them
+    iBlinds(I.blinds.x, I.blinds.y, t); iRover(I.rover.x, I.rover.y, t); iPhone(I.challenge.x, I.challenge.y, t); iRobot(I.robot.x, I.robot.y, t); iNext(I.next.x, I.next.y);
+    R(I.rover.x + 39, I.rover.y - 6, 5, 6, '#f1e3c6'); R(I.rover.x + 44, I.rover.y - 5, 1, 3, '#f1e3c6');                                    // a mug by the rover
+    if (Q.port) { const py = I.rover.y; if (I.rover.x - Q.x0 >= 36) iSolder(Q.x0 + 3, py, t); else if (I.rover.x - Q.x0 >= 21) iSolder(Q.x0 - 11, py, t, true); if (Q.x1 - (I.rover.x + 46) >= 12) iCalc(Q.x1 - 12, py); }   // on a phone, only the shelf with room gets them
     else {
-      const g1 = I.pickypal.x - (I.blinds.x + 26), g2 = I.robot.x - (I.challenge.x + 14);
+      const g1 = I.rover.x - (I.blinds.x + 26), g2 = I.robot.x - (I.challenge.x + 14);
       if (g1 >= 12) iCalc(I.blinds.x + 26 + Math.round((g1 - 8) / 2), by);
       if (Q.printer) { if (I.blinds.x >= 67) iSolder(36, by, t); else iSolder(22, by, t, true); } else if (g2 >= 21) iSolder(I.challenge.x + 1 + Math.round((g2 - 17) / 2), by, t, true);
     }
     const fl = 1 + 0.01 * Math.sin(t * 6.1), Rw = Math.max(W, H) * fl;
     for (const [r, a] of [[0.85, 0.03], [0.7, 0.03], [0.56, 0.035], [0.44, 0.04], [0.33, 0.045], [0.23, 0.05], [0.14, 0.06], [0.07, 0.08]]) glow(lx, ly + 8, Rw * r, '255,160,84', a);
-    glow(I.pickypal.x + 18, I.pickypal.y - 13, 15, '255,236,214', 0.06);
     if (full <= 0.01) return;
     const wox = ox, woy = oy, wkk = k;                                                                                                                  // labels keep their size while the room grows, so they can be read (and tapped) early
     for (const q in I) {
@@ -280,7 +285,7 @@ export function initHero({ canvas, heroSection, heroUi, endSection, endUi, butto
   }
 
   // The same sprites again, further down the page: each project section opens with its own, under a wall lamp.
-  const ITEM = { blinds: [iBlinds, 26], pickypal: [iLaptop, 36], challenge: [iPhone, 14], robot: [iRobot, 34], next: [iNext, 26] };
+  const ITEM = { blinds: [iBlinds, 26], rover: [iRover, 36], challenge: [iPhone, 14], robot: [iRobot, 34], next: [iNext, 26] };
   const icons = [...document.querySelectorAll('canvas[data-icon]')].map(c => { c.width = 48; c.height = 62; return { c, x: c.getContext('2d'), it: ITEM[c.dataset.icon], on: false }; });
   const iconSeen = new IntersectionObserver(es => es.forEach(e => { const o = icons.find(i => i.c === e.target); if (o) o.on = e.isIntersecting; }), { rootMargin: '120px' });
   icons.forEach(o => iconSeen.observe(o.c));
