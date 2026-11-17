@@ -1,7 +1,7 @@
 // The ENES 100 rover (team H2GO's water-sampling OTV), assembled from the team's real CAD parts.
 // Scene units are millimetres: x forward, y up from the ground, z across. The wiring follows Dom's circuit diagram.
 import * as THREE from 'three';
-import { makeStage, blobShadow, unpack, cadMesh } from './tech.js?v=20261116b';
+import { makeStage, blobShadow, unpack, cadMesh } from './tech.js?v=20261116c';
 
 const COLORS = {
   chassis: 0x2d4a6b, shield: 0x6b4bb0, post: 0x1c1f22, marker: 0xf2efe6, drive: 0x23282c, motor: 0xb9c2c7, wheel: 0x17191c, power: 0x23282c, battery: 0x2f7d4f, switch: 0x8f1f1f,
@@ -163,6 +163,6 @@ export async function initOtv({ stage, canvas, tag, slider, list, wiringToggle, 
       if (!st.dragging && st.t - st.lastDrag > 3 && !reduce) st.yawT += Math.sin(st.t * 0.25) * 0.0006;
     },
   });
-  tag.textContent = 'The team’s real CAD, running the mission. Drag to turn.';
+  tag.textContent = '';
   stage.__view = { S, st, set: x => { eT = x; slider.value = x * 100; }, rover, camera };
 }

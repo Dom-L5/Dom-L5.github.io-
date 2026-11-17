@@ -387,7 +387,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <p class="hero-kicker note">Mechanical engineering, University of Maryland</p>
     <h1 class="hero-name" id="heroName"><span>Domenic</span><span>Landriscina</span></h1>
     <div class="hero-foot">
-      <p class="hero-line" data-laps="Oh look, there's a robot. | Oh, there's more. | Wait, they're mutating. | Are they getting closer? | Okay, that's a lot of robots. | Uh-oh... scroll to escape">Look through the blinds to see some of my past and current projects.</p>
+      <p class="hero-line" data-laps="Oh look, there's a robot outside. | That's weird, now there are more. | Wait, are they mutating? | Are they getting closer? | Okay, that's a lot of robots. | Uh-oh... scroll to escape">Look through the blinds to see some of my projects.</p>
     </div>
   </div>
   <div class="blind-buttons" id="blindButtons" hidden>
@@ -415,7 +415,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
       <h2 class="vh">About me</h2>
       <dl class="facts">
         <div><dt class="note">Studying</dt><dd>Mechanical engineering at the University of Maryland, class of 2029</dd></div>
-        <div><dt class="note">Skills</dt><dd>SolidWorks, Altium, 3D printing</dd></div>
+        <div><dt class="note">Skills</dt><dd>CAD, PCB design, 3D printing, electronics</dd></div>
         <div><dt class="note">Interests</dt><dd>Robotics and product design</dd></div>
       </dl>
     </div>
@@ -430,16 +430,15 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <article class="project" id="blinds">
       <p class="when note">Senior year<br>2024–25</p>
       <div class="body">
-        <header class="station"><canvas data-icon="blinds" aria-hidden="true"></canvas><h2>A window blind that opens itself in the morning</h2><i class="plank" aria-hidden="true"></i></header>
+        <header class="station"><canvas data-icon="blinds" aria-hidden="true"></canvas><h2>A window blind that automatically opens in the morning</h2><i class="plank" aria-hidden="true"></i></header>
         <div class="split">
           <div>
-            <p class="lede">Press the green button before bed. Eight hours later a motor tilts the slats open and daylight wakes you up.</p>
+            <p class="lede">Press the green button before bed. Eight hours later a motor tilts the slats open, and daylight gently wakes you up.</p>
             <ul class="points">
-              <li>A 12 V motor driving a planetary gearbox sits in the end of the head rail and turns the tilt mechanism directly. It replaces the wand.</li>
-              <li>An Arduino Uno with an Adafruit Motor Shield runs the timer and drives the motor.</li>
-              <li>Two buttons and one LED. The LED confirms the timer has started.</li>
-              <li>The printed motor tray slides into the head rail, so only the control box shows beside the slats.</li>
-              <li>The blind mounts on the front of the window frame. The Arduino and battery sit in a second printed box, up inside the opening behind it.</li>
+              <li>A 12 V motor drives a planetary gearbox that sits in the end of the head rail and turns the tilt mechanism directly.</li>
+              <li>An Arduino Uno with an Adafruit Motor Shield runs the timer and controls the motor.</li>
+              <li>The Arduino sets the slat angle accurately by reading the motor's encoder.</li>
+              <li>The green button starts the timer, the LED confirms it has started, and the red button closes the blind.</li>
             </ul>
             <ul class="frames in-body"><li class="lg">Senior design<br>project</li><li>Catonsville<br>High School</li></ul>
           </div>
@@ -460,20 +459,20 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <canvas id="driveCanvas"></canvas>
               <div class="balloons" id="driveBalloons" aria-hidden="true"><svg></svg></div>
             </div>
-            <div class="ctl note"><label for="driveExplode">Assembled</label><input id="driveExplode" type="range" min="0" max="100" value="0" aria-label="Take the drive apart"><span>Taken apart</span><span class="ctl-tip">The printed parts are my real CAD files. Drag to turn.</span></div>
+            <div class="ctl note"><label for="driveExplode">Assembled</label><input id="driveExplode" type="range" min="0" max="100" value="0" aria-label="Take the drive apart"><span>Taken apart</span></div>
           </div>
           <div>
             <p class="parts-title note">Parts</p>
             <ol class="parts" id="driveParts">
-              <li data-part="1"><span class="n">1</span><div><b>Head rail and slats</b><span class="note">The stock blind. The tilt rod runs inside the rail.</span></div></li>
+              <li data-part="1"><span class="n">1</span><div><b>Head rail and slats</b></div></li>
               <li data-part="2"><span class="n">2</span><div><b>Hex shaft</b><span class="note">Couples the motor straight to the tilt mechanism.</span></div></li>
-              <li data-part="3"><span class="n">3</span><div><b>Gearmotor</b><span class="note">12 V, planetary gearbox, encoder. It lies in the tray, with its back end inside the cap.</span></div></li>
-              <li data-part="4"><span class="n">4</span><div><b>Motor housing</b><span class="note">3D printed in one piece. The tray slides into the end of the rail. The cap and the button plate stay outside, beside the slats.</span></div></li>
-              <li data-part="5"><span class="n">5</span><div><b>Buttons and LED</b><span class="note">Green starts the timer. The LED shows it is running.</span></div></li>
-              <li data-part="6"><span class="n">6</span><div><b>Arduino Uno and Motor Shield</b><span class="note">The shield plugs into the top of the Uno.</span></div></li>
+              <li data-part="3"><span class="n">3</span><div><b>Planetary gearbox and 12 V DC motor</b></div></li>
+              <li data-part="4"><span class="n">4</span><div><b>Motor housing and control panel</b></div></li>
+              <li data-part="5"><span class="n">5</span><div><b>Buttons and LED</b><span class="note">Wired to the control box.</span></div></li>
+              <li data-part="6"><span class="n">6</span><div><b>Arduino Uno and Motor Shield</b><span class="note">The shield plugs directly into the top of the Uno.</span></div></li>
               <li data-part="7"><span class="n">7</span><div><b>12 V battery pack</b><span class="note">Plugs into the motor shield.</span></div></li>
-              <li data-part="8"><span class="n">8</span><div><b>Electronics enclosure</b><span class="note">3D printed, with an end cap. Tucked up under the top of the window opening, behind the blind. A sheathed cable runs from the cap to the buttons.</span></div></li>
-              <li data-part="9"><span class="n">9</span><div><b>Window frame</b><span class="note">The blind mounts on the front of the frame, so it covers the whole window and the button box can sit off to the right. The prototype itself was built on a wooden test stand.</span></div></li>
+              <li data-part="8"><span class="n">8</span><div><b>Electronics enclosure</b><span class="note">3D printed, with an end cap. Tucked up under the top of the window opening, behind the blind.</span></div></li>
+              <li data-part="9"><span class="n">9</span><div><b>Window frame</b></div></li>
             </ol>
           </div>
         </div>
@@ -482,7 +481,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
           <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-drive.webp" width="960" height="1280" alt="Looking down into the head rail: a silver gearmotor with a hex shaft coupled to the white tilt mechanism"></div><figcaption class="note">Testing the fitment of the gearbox.</figcaption></figure>
           <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-housing.webp" width="960" height="1280" alt="White 3D printed button box with a green and a red button, at the end of the blind's head rail beside the slats"></div><figcaption class="note">Front view: start and stop buttons, plus an indicator light.</figcaption></figure>
           <figure class="landscape" style="--ar:1.669"><div class="shot"><img loading="lazy" src="assets/blinds-back.webp" width="960" height="575" alt="The test stand from behind: the back of the button box, a white printed box fixed under the top beam, the cable between them, and the slats"></div><figcaption class="note">From behind: the enclosure under the top beam, and the cable to the buttons.</figcaption></figure>
-          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-team.webp" width="960" height="1280" alt="Two students leaning on the finished blind and its wooden test stand in a classroom"></div><figcaption class="note">The finished prototype, and the team.</figcaption></figure>
+          <figure style="--ar:.75"><div class="shot"><img loading="lazy" src="assets/blinds-team.webp" width="960" height="1280" alt="Two students leaning on the finished blind and its wooden test stand in a classroom"></div><figcaption class="note">The finished prototype.</figcaption></figure>
         </div>
       </div>
     </article>
@@ -494,36 +493,36 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <article class="project" id="rover">
       <p class="when note">Spring 2026</p>
       <div class="body">
-        <header class="station"><canvas data-icon="rover" aria-hidden="true"></canvas><h2>A water-sampling rover, built by a team of eight</h2><i class="plank" aria-hidden="true"></i></header>
+        <header class="station"><canvas data-icon="rover" aria-hidden="true"></canvas><h2>My team's OTV</h2><i class="plank" aria-hidden="true"></i></header>
         <div class="drawing" style="margin-top:clamp(26px,4.5vh,52px)">
           <div>
             <div class="stage robot" id="otvStage" aria-label="Live 3D model of the rover. Drag to turn it.">
               <canvas id="otvCanvas"></canvas>
             </div>
-            <div class="ctl note"><label for="otvExplode">Running</label><input id="otvExplode" type="range" min="0" max="100" value="0" aria-label="Take the rover apart"><span>Taken apart</span><span class="ctl-tip" id="otvTag">Loading the CAD model…</span></div>
+            <div class="ctl note"><label for="otvExplode">Running</label><input id="otvExplode" type="range" min="0" max="100" value="0" aria-label="Take the rover apart"><span>Taken apart</span><span class="ctl-tip" id="otvTag"></span></div>
             <div class="ctl toggles note">
               <label><input type="checkbox" id="otvWiring" checked> Wiring</label>
               <label><input type="checkbox" id="otvTop" checked> Top plate</label>
-              <span class="ctl-tip">Lift the top plate to see the electronics.</span>
             </div>
           </div>
           <div>
             <ul class="points" id="otvParts">
-              <li data-group="chassis">ENES 100 at Maryland. Our rover drives itself to a bowl of water, measures the depth, checks it for plastic and collects a 20 mL sample.</li>
-              <li data-group="control">I was the electronics lead: the circuit diagram, the power distribution and the debugging, plus some of the early CAD.</li>
+              <li data-group="chassis">Built in my intro to engineering class (ENES 100) with a team of eight, in one semester.</li>
+              <li data-group="sensor">Our job: drive autonomously to the mission site, detect the water level and whether there were pollutants, then collect a water sample and navigate to the finish.</li>
+              <li data-group="control">I was the electronics lead, working mainly on the electronics, the power distribution and the early CAD.</li>
               <li data-group="power">One 12 V battery runs everything. It feeds the Arduino Mega and the drive H-bridge directly, and a buck converter steps it down to 5 V for a second H-bridge that runs the rack motor, the LEDs and the photoresistor.</li>
-              <li data-group="mission">A piece of diaper on a rack and pinion soaks up the sample. Our first idea, a printed bucket, did not collect enough water.</li>
+              <li data-group="mission">We used sodium polyacrylate (from a diaper) to soak up enough water.</li>
             </ul>
-            <div class="learned"><span class="note">What I learned</span><q>Work out the voltage every part needs before wiring anything.</q></div>
+            <div class="learned"><span class="note">What I learned</span><q>On a tight timeline, everything that can go wrong will.</q></div>
           </div>
         </div>
         <div class="strip fit">
-          <figure class="landscape" style="--ar:1.778"><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/rover-run-poster.jpg" aria-label="The rover driving up to the bowl and lowering the diaper into the water"><source src="assets/rover-run.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">A mission run at double speed: it drives to the bowl and lowers the diaper into the water.</figcaption></figure>
+          <figure class="landscape" style="--ar:1.778"><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/rover-run-poster.jpg" aria-label="The rover driving up to the bowl and lowering the diaper into the water"><source src="assets/rover-run.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">A mission run at double speed.</figcaption></figure>
           <figure class="landscape" style="--ar:1.333"><div class="shot"><img loading="lazy" src="assets/rover-arena.webp" width="1400" height="1050" alt="The finished rover in the arena, with its marker on top, the rack raised and the diaper out in front"></div><figcaption class="note">The finished rover in the arena.</figcaption></figure>
         </div>
         <div class="strip fit">
           <figure style="--ar:.949"><div class="shot" style="background:#fff"><img loading="lazy" src="assets/rover-circuit.webp" width="1309" height="1379" alt="Circuit diagram: an Arduino Mega wired to three limit switches, two ultrasonic sensors, a WiFi module, two H-bridges, a buck converter, three motors, a photoresistor, two LEDs, a switch and a 12 volt battery" style="object-fit:contain"></div><figcaption class="note">My circuit diagram.</figcaption></figure>
-          <figure class="landscape" style="--ar:1.535"><div class="shot"><img loading="lazy" src="assets/rover-wiring.webp" width="1400" height="912" alt="The rover on a bench part way through wiring, with the two plates, a wheel, the water shield and loose red and black leads"></div><figcaption class="note">The first wiring pass, running from a bench supply.</figcaption></figure>
+          <figure class="landscape" style="--ar:1.535"><div class="shot"><img loading="lazy" src="assets/rover-wiring.webp" width="1400" height="912" alt="The rover on a bench part way through wiring, with the two plates, a wheel, the water shield and loose red and black leads"></div><figcaption class="note">A wiring test, running from a bench supply.</figcaption></figure>
         </div>
       </div>
     </article>
@@ -542,7 +541,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
               <li>Took me about two months to build and ship, after many redesigns.</li>
               <li>A streak counter, a calendar history and challenge paths that keep you coming back.</li>
               <li>Marketed it on TikTok and Reddit. A few thousand views in total.</li>
-              <li>My first app, PickyPal, was easy to market because the problem hurt. Habit trackers are a crowded category, and mine was not different enough.</li>
+              <li>My first app, PickyPal, was easy to market because it solved a real problem in a niche market. Habit trackers are a crowded category, and mine was not different enough.</li>
             </ul>
             <div class="score" id="score">
               <div class="row"><span class="big">38</span><span class="of note">downloads</span></div>
@@ -578,7 +577,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
     <article class="project" id="robot">
       <p class="when note">July 2026<br>to now</p>
       <div class="body">
-        <header class="station"><canvas data-icon="robot" aria-hidden="true"></canvas><h2>A walking robot, designed from zero</h2><i class="plank" aria-hidden="true"></i></header>
+        <header class="station"><canvas data-icon="robot" aria-hidden="true"></canvas><h2>My four-legged walking robot</h2><i class="plank" aria-hidden="true"></i></header>
         <div class="drawing" style="margin-top:clamp(26px,4.5vh,52px)">
           <div>
             <div class="stage robot" id="robotStage" aria-label="Live 3D model of the robot. Drag to turn it.">
@@ -588,7 +587,6 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             <div class="ctl toggles note">
               <label><input type="checkbox" id="robotWiring" checked> Wiring</label>
               <label><input type="checkbox" id="robotCover" checked> Top cover</label>
-              <span class="ctl-tip">Lift the cover to see inside.</span>
             </div>
           </div>
           <div>
@@ -605,8 +603,8 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
         <div class="strip">
           <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-walk-poster.jpg" aria-label="The robot standing up and walking toward the camera on a tile floor"><source src="assets/robot-walk.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">Clearly not enough traction walking on tile.</figcaption></figure>
           <figure><div class="shot clip"><video muted loop playsinline preload="none" poster="assets/robot-carpet-poster.jpg" aria-label="The robot walking and turning on carpet"><source src="assets/robot-carpet.mp4" type="video/mp4"></video><button type="button" class="note" data-toggle-video>Pause</button></div><figcaption class="note">Testing a new foot design that did not work at all.</figcaption></figure>
-          <figure><div class="shot"><img loading="lazy" src="assets/robot-wiring.webp" width="960" height="1280" alt="Inside the robot body: servo wires, the custom board and the driver packed into a small space"></div><figcaption class="note">The space problem.</figcaption></figure>
-          <figure><div class="shot" style="background:#fff"><img loading="lazy" src="assets/robot-pcb-3d.webp" width="600" height="425" alt="3D render of the custom power and I2C board, 55 by 39 millimetres" style="object-fit:contain"></div><figcaption class="note">Power and I2C board, 55 × 39 mm.</figcaption></figure>
+          <figure><div class="shot"><img loading="lazy" src="assets/robot-wiring.webp" width="960" height="1280" alt="Inside the robot body: servo wires, the custom board and the driver packed into a small space"></div><figcaption class="note">The space problem that made assembly hard.</figcaption></figure>
+          <figure><div class="shot" style="background:#fff"><img loading="lazy" src="assets/robot-pcb-3d.webp" width="600" height="425" alt="3D render of the custom power and I2C board, 55 by 39 millimetres" style="object-fit:contain"></div><figcaption class="note">Custom power and I2C board, 55 × 39 mm.</figcaption></figure>
         </div>
       </div>
     </article>
@@ -623,6 +621,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
             <p class="lede">Version two should be good enough to teach someone else the basics of robotics.</p>
             <ul class="points">
               <li>An ESP32 instead of the Arduino Nano, so it can be driven with an Xbox controller.</li>
+              <li>An IMU to measure its orientation and feed that data into the controls.</li>
               <li>CAD that prints with fewer supports and goes together easily.</li>
               <li>A smaller custom PCB.</li>
               <li>New feet with better traction.</li>
@@ -664,7 +663,7 @@ figcaption { margin-top: 9px; color: var(--mute); max-width: 44ch; }
 </main>
 
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
-<script type="module" src="js/main.js?v=20261116b"></script>
+<script type="module" src="js/main.js?v=20261116c"></script>
 <script>
 /* Resume download. On a normal host the plain link downloads the PDF.
    Inside the claude.ai preview, links can't download, so hand the file over through the viewer instead. */

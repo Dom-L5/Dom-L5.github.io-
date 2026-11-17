@@ -2,7 +2,7 @@
 // the blind, motor, boards and window are modelled from the photos of the prototype. Units are millimetres.
 // x runs along the head rail (the drive is at the right-hand end), y is up, z points into the room.
 import * as THREE from 'three';
-import { makeStage, drawingMaterial, addEdges, blobShadow, smooth, unpack, cadMesh } from './tech.js?v=20261116b';
+import { makeStage, drawingMaterial, addEdges, blobShadow, smooth, unpack, cadMesh } from './tech.js?v=20261116c';
 
 const WHITE = 0xf6f7f7, FRAME = 0xd3d9da, STEEL = 0xb9c3c8, DARK = 0x23292d;
 const box = (w, h, d, mat, x = 0, y = 0, z = 0, edges = true) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (edges) addEdges(m); return m; };
