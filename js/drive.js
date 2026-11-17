@@ -2,14 +2,14 @@
 // the blind, motor, boards and window are modelled from the photos of the prototype. Units are millimetres.
 // x runs along the head rail (the drive is at the right-hand end), y is up, z points into the room.
 import * as THREE from 'three';
-import { makeStage, drawingMaterial, addEdges, blobShadow, smooth, unpack, cadMesh } from './tech.js?v=20261116c';
+import { makeStage, drawingMaterial, addEdges, blobShadow, smooth, unpack, cadMesh } from './tech.js?v=20261116d';
 
 const WHITE = 0xf6f7f7, FRAME = 0xd3d9da, STEEL = 0xb9c3c8, DARK = 0x23292d;
 const box = (w, h, d, mat, x = 0, y = 0, z = 0, edges = true) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (edges) addEdges(m); return m; };
 const cylX = (r, len, mat, x, y = 0, seg = 40) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg), mat); m.rotation.z = Math.PI / 2; m.position.set(x, y, 0); addEdges(m, 0x111a1f, 0.5, 40); return m; };
 
 export async function initDrive({ stage, canvas, balloons, slider, list }) {
-  const { manifest, b64 } = await import('./drive-data.js');
+  const { manifest, b64 } = await import('./drive-data.js?v=20261116d');
   const cad = Object.fromEntries(unpack(manifest, b64).map(p => [p.name, p]));
   const S = makeStage(stage, canvas, { fov: 24, yaw: 0.56, pitch: 0.2, pitchRange: [-0.45, 0.9] });
   const { turn, camera, st } = S;
@@ -30,7 +30,7 @@ export async function initDrive({ stage, canvas, balloons, slider, list }) {
   // 1 the blind: head rail (an open-topped channel, sized to take the printed motor tray), tilt rod, stock tilt mechanism, slats, ladder cords
   const blind = new THREE.Group(); const mRail = mat('1', WHITE);
   blind.add(box(300, 2, 58, mRail, -150, -31, 0), box(300, 52, 2, mRail, -150, -5, 28), box(300, 52, 2, mRail, -150, -5, -28));
-  const rod = box(188, 4, 4, drawingMaterial(STEEL, { metalness: 0.3 }), -206, 0, 0, false); blind.add(rod);
+  const rod = cylX(2.7, 196, drawingMaterial(STEEL, { metalness: 0.3 }), -202, 0, 6); blind.add(rod);   // the blind's own small hex rod; its end slides into the adapter
   blind.add(box(18, 22, 18, mRail, -142, -3, 0));
   const slats = [];
   for (let i = 0; i < 7; i++) { const s = box(296, 2.6, 50, mRail, -150, -58 - i * 43.5, 0); slats.push(s); blind.add(s); }
@@ -39,12 +39,13 @@ export async function initDrive({ stage, canvas, balloons, slider, list }) {
     const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, -32, z * 0.6), new THREE.Vector3(x, -338, z * 0.6)]), cordMat); blind.add(l);
   }
 
-  // 2 hex shaft
+  // 2 the adapter (the real STL): a sleeve with a large hex socket for the gearbox shaft and a small one for the blind's rod
   const shaft = new THREE.Group();
-  const hex = cylX(5.5, 32, mat('2', 0xd9b56a, { metalness: 0.2, roughness: 0.5 }), -96, 0, 6); shaft.add(hex);
+  const hex = cadMesh(cad.adapter, mat('2', 0xd9b56a, { metalness: 0.2, roughness: 0.5 }), { edges: 30 }); shaft.add(hex);
   // 3 gearmotor: the gearbox lies in the tray, the motor's back end sits in the bore of the cap
   const motor = new THREE.Group(); const mMotor = mat('3', STEEL, { metalness: 0.35, roughness: 0.45 });
-  motor.add(cylX(8, 6, mMotor, -77, 0, 24), cylX(21.5, 34, mMotor, -57, 0), cylX(20.5, 62, mMotor, -9, 0), cylX(16, 10, drawingMaterial(DARK), 27, 0));
+  const outHex = cylX(5.3, 26, mMotor, -87, 0, 6);   // the gearbox's fixed output shaft, a large hex
+  motor.add(outHex, cylX(8, 6, mMotor, -77, 0, 24), cylX(21.5, 34, mMotor, -57, 0), cylX(20.5, 62, mMotor, -9, 0), cylX(16, 10, drawingMaterial(DARK), 27, 0));
   // 4 the printed motor holder (the real STL): a tray that slides into the rail, a cap that stays outside it,
   //   and the plate that hangs down from the cap with the holes for the two buttons and the LED
   const housing = new THREE.Group(); const mHouse = mat('4', WHITE);
@@ -84,13 +85,13 @@ export async function initDrive({ stage, canvas, balloons, slider, list }) {
   // taking it apart: first the blind comes forward out of the window, then the drive slides out of the rail
   const P = (o, a, b) => ({ o, home: o.position.clone(), a: new THREE.Vector3(...a), b: new THREE.Vector3(...b) });
   const moves = [
-    P(blind, [0, 0, 196], [0, 0, 0]), P(shaft, [0, 0, 196], [20, 0, 0]), P(motor, [0, 0, 196], [72, 0, 0]),
+    P(blind, [0, 0, 196], [0, 0, 0]), P(shaft, [0, 0, 196], [22, 64, 0]), P(motor, [0, 0, 196], [84, 64, 0]),   // both lift up out of the open-topped rail
     P(housing, [0, 0, 196], [196, 0, 0]), P(ctl, [0, 0, 196], [196, 0, 52]),
     P(enc, [0, 0, 0], [-190, -30, 150]), P(shell, [0, 0, 0], [-132, 0, 0]), P(lid, [0, 0, 0], [40, 0, 0]), P(uno, [0, 0, 0], [0, -12, 0]), P(batt, [0, 0, 0], [0, 8, 0]),
   ];
 
   const B = [
-    [1, blind, [-285, -150, 22], [-0.07, 0.06], 0], [2, shaft, [-96, 6, 0], [0.0, -0.15], 0.62], [3, motor, [-20, 21, 0], [0.04, -0.12], 0.62],
+    [1, blind, [-285, -150, 22], [-0.07, 0.06], 0], [2, shaft, [-100, 9, 0], [0.0, -0.15], 0.62], [3, motor, [-20, 21, 0], [0.04, -0.12], 0.62],
     [4, housing, [50, 29, 0], [0.09, -0.09], 0], [5, ctl, [54.5, -54, 40], [0.1, 0.035], 0],
     [6, shield, [30, 1, 27], [0.1, 0.06], 0.78], [7, batt, [50, 8, 29], [0.1, -0.03], 0.78], [8, shell, [-150, -15, -41], [-0.04, -0.11], 0.62],
     [9, frame, [-190, 36, -28], [-0.03, -0.065], 0],
@@ -129,7 +130,7 @@ export async function initDrive({ stage, canvas, balloons, slider, list }) {
       spin += dt * run;
       const tilt = 0.62 + 0.5 * Math.sin(spin * 0.9) * (run > 0 ? 1 : 0);
       for (const s of slats) s.rotation.x = tilt;
-      hex.rotation.x = rod.rotation.x = tilt * 3;
+      hex.rotation.x = rod.rotation.x = outHex.rotation.x = tilt * 3;
       led.material.color.setHex(run > 0.5 ? 0x6fb6ff : 0x39506a);
       if (!st.dragging && st.t - st.lastDrag > 3 && !reduce) st.yawT += Math.sin(st.t * 0.3) * 0.0005;
     },

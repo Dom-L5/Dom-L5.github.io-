@@ -1,6 +1,6 @@
 // The robot: Dom's real SolidWorks assembly, rigged at its eight servo axes and walking the trot gait.
 import * as THREE from 'three';
-import { makeStage, blobShadow, smooth, creased } from './tech.js?v=20261116c';
+import { makeStage, blobShadow, smooth, creased } from './tech.js?v=20261116d';
 import { buildElectronics } from './wiring.js';
 
 const COLORS = { body: 0x2a3035, cover: 0x30373c, link: 0x2a3035, arm: 0x2a3035, foot: 0x2a3035, servo: 0x171b1e, pcb: 0x1f7a4d, battery: 0x3d6fb4, switch: 0x101214, hw: 0xaab4b9 };
